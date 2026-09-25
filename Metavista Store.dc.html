@@ -1318,25 +1318,26 @@ class PrintViewer {
     r.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:grab;outline:none';
     el.appendChild(r.domElement);
     const scene = this.scene = new T.Scene(); scene.background = new T.Color(0x0d0d0d);
-    // studio environment for metal reflections (soft boxes around the print)
-    const pm = new T.PMREMGenerator(r), env = new T.Scene();
-    env.add(new T.Mesh(new T.BoxGeometry(12, 8, 12), new T.MeshBasicMaterial({ color:0x2a2a2a, side:T.BackSide })));
-    [[0, 3.6, 0, 7, .05, 3, 3.2], [-5.5, 1.2, 1, .05, 3.5, 4, 2.2], [5.5, .6, -1, .05, 3, 4, 1.4], [0, .8, 5.5, 5, 3, .05, 1.1]].forEach(([x, y, z, w, h, d, k]) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), new T.MeshBasicMaterial({ color: new T.Color(k, k, k) })); m.position.set(x, y, z); env.add(m); });
-    scene.environment = pm.fromScene(env, .04).texture; pm.dispose();
-    scene.add(new T.AmbientLight(0xffffff, .55));
-    const dl = new T.DirectionalLight(0xffffff, 1.0); dl.position.set(-8, 10, 8); scene.add(dl);
-    const pl = new T.PointLight(0xffffff, .6, 1100); pl.position.set(-5, 3, -2); scene.add(pl);
-    const rim = new T.DirectionalLight(0xffffff, .45); rim.position.set(6, -2, -8); scene.add(rim);
-    const cam = this.camera = new T.PerspectiveCamera(32, 1, .01, 100); cam.position.set(0, .12, 3.2);
+    // HDR studio environment: the glossy coat mirrors it, so the print reads as coated metal
+    const pm = new T.PMREMGenerator(r); scene.environment = pm.fromScene(this.studio(), .005).texture; pm.dispose();
+    scene.add(new T.AmbientLight(0xffffff, .12));
+    const dl = new T.DirectionalLight(0xffffff, .35); dl.position.set(-4, 6, 8); scene.add(dl);
+    const cam = this.camera = new T.PerspectiveCamera(32, 1, .05, 100); cam.position.set(0, .12, 3.2);
     const ctl = this.controls = new T.OrbitControls(cam, r.domElement);
     Object.assign(ctl, { enableDamping:true, dampingFactor:.08, enablePan:false, rotateSpeed:.75, minDistance:1.7, maxDistance:4.6, minPolarAngle:Math.PI * .28, maxPolarAngle:Math.PI * .72, autoRotate:true, autoRotateSpeed:2.4 });
     ctl.addEventListener('start', () => { this.drag = true; this.userAt = Date.now(); ctl.autoRotate = false; r.domElement.style.cursor = 'grabbing'; });
     ctl.addEventListener('end', () => { this.drag = false; this.userAt = Date.now(); r.domElement.style.cursor = 'grab'; });
     this.group = new T.Group(); scene.add(this.group); this.hw = new T.Group(); this.group.add(this.hw);
-    this.edgeMat = new T.MeshStandardMaterial({ color:0xd0d0d8, metalness:.7, roughness:.3 });
-    this.backMat = new T.MeshStandardMaterial({ color:0xc4c8ce, metalness:.55, roughness:.42 });
-    this.frontMat = new T.MeshStandardMaterial({ color:0xffffff, metalness:.2, roughness:.32, envMapIntensity:.9 });
-    this.hwMat = new T.MeshStandardMaterial({ color:0x909090, metalness:1, roughness:.45, envMapIntensity:1.5 });
+    // mouse hover tilts the print a little so the highlights glide across it
+    this.tilt = { x:0, y:0, tx:0, ty:0 };
+    r.domElement.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || this.drag) return; const b = r.domElement.getBoundingClientRect(); this.tilt.ty = ((e.clientX - b.left) / b.width - .5) * .32; this.tilt.tx = ((e.clientY - b.top) / b.height - .5) * .22; });
+    r.domElement.addEventListener('pointerleave', () => { this.tilt.tx = this.tilt.ty = 0; });
+    this.brushTex = this.brushedMap();
+    this.edgeMat = new T.MeshStandardMaterial({ color:0xdadde2, metalness:1, roughness:.22, envMapIntensity:1.2 });
+    this.backMat = new T.MeshStandardMaterial({ color:0xc9ccd1, metalness:1, roughness:.5, roughnessMap:this.brushTex, bumpMap:this.brushTex, bumpScale:.0004 });
+    this.frontMat = new T.MeshPhysicalMaterial({ color:0xffffff });
+    this.applyFinish('gloss');
+    this.hwMat = new T.MeshStandardMaterial({ color:0x55595f, metalness:.85, roughness:.32, envMapIntensity:1.1 });
     this.darkMat = new T.MeshStandardMaterial({ color:0x2a2d31, metalness:.3, roughness:.6 });
     // hotspot layer (DOM, positioned from 3D each frame)
     const lay = this.layer = document.createElement('div'); lay.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden'; el.appendChild(lay);
@@ -1356,6 +1357,7 @@ class PrintViewer {
     if (this.pop) { const k = Math.min(1, (now - this.pop.t0) / 650), s = this.pop.s + (1 - this.pop.s) * easeOutBack(k); this.group.scale.setScalar(s); if (k >= 1) this.pop = null; }
     // resume auto-rotation 2.5 s after the user lets go (front view only)
     if (this.o.mode !== 'back' && !this.controls.autoRotate && !this.animating && !this.drag && this.userAt && now - this.userAt > 2500) this.controls.autoRotate = true;
+    const tl = this.tilt, on = this.o.mode !== 'back' && !this.drag; tl.x += ((on ? tl.tx : 0) - tl.x) * .08; tl.y += ((on ? tl.ty : 0) - tl.y) * .08; this.group.rotation.set(tl.x, tl.y, 0);
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.placeSpots();
@@ -1363,15 +1365,15 @@ class PrintViewer {
   update(o) {
     const T = this.T, p = this.o; this.o = { ...o };
     if (o.img !== p.img || o.aspect !== p.aspect || o.wm !== p.wm) this.setPrint(o);
-    if (o.finish !== p.finish) { const g = o.finish === 'brushed'; Object.assign(this.frontMat, { metalness: g ? .55 : .2, roughness: g ? .5 : .32, envMapIntensity: g ? 1.05 : .9 }); this.frontMat.color.set(g ? 0xe4e4e4 : 0xffffff); this.frontMat.needsUpdate = true; }
+    if (o.finish !== p.finish) this.applyFinish(o.finish);
     if (o.mount !== p.mount || o.aspect !== p.aspect) this.buildHardware(o.mount);
     if (o.mode !== p.mode) this.setMode(o.mode, !!p.mode);
     if (JSON.stringify(o.spots) !== JSON.stringify(p.spots) || o.mode !== p.mode) this.buildSpots(o.mode === 'back' ? o.spots : []);
   }
   setPrint(o) {
     const T = this.T, a = o.aspect || .75, L = 1.25, gW = a >= 1 ? L : L * a, gH = a >= 1 ? L / a : L, D = .012; this.dims = { gW, gH, D };
-    if (this.plate) { this.group.remove(this.plate); this.plate.geometry.dispose(); }
-    this.plate = new T.Mesh(new T.BoxGeometry(gW, gH, D), [this.edgeMat, this.edgeMat, this.edgeMat, this.edgeMat, this.frontMat, this.backMat]); this.group.add(this.plate);
+    if (this.plate) { this.group.remove(this.plate); this.plate.traverse(m => m.geometry && m.geometry.dispose()); }
+    this.plate = this.makePlate(gW, gH, D); this.group.add(this.plate);
     this.hw.position.z = -D / 2;
     if (!o.img) return;
     const im = new Image(); im.onload = () => {
@@ -1379,9 +1381,66 @@ class PrintViewer {
       const x = c.getContext('2d'); x.drawImage(im, 0, 0, c.width, c.height);
       if (o.wm) { x.save(); x.globalAlpha = .38; x.fillStyle = '#fff'; x.font = `700 ${Math.round(c.width / 26)}px Arial, sans-serif`; x.translate(c.width / 2, c.height / 2); x.rotate(-.42); const step = c.width / 2.6; for (let yy = -c.height; yy < c.height; yy += step / 1.6) for (let xx = -c.width; xx < c.width; xx += step) x.fillText('METAVISTA · PREVIEW', xx + (Math.round(yy / step) % 2) * step / 2, yy); x.restore(); }
       const tex = new T.CanvasTexture(c); tex.encoding = T.sRGBEncoding; tex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-      if (this.frontMat.map) this.frontMat.map.dispose(); this.frontMat.map = tex; this.frontMat.needsUpdate = true;
+      [this.photoTex, this.metalTex, this.dimTex].forEach(t => t && t.dispose()); this.photoTex = tex; Object.assign(this, this.metalFromPhoto(c)); this.applyFinish(this.o.finish);
       this.pop = { s:.82, t0: performance.now() };
     }; im.src = o.img;
+  }
+  studio() {
+    const T = this.T, env = new T.Scene(), lit = (k, c = 0xffffff) => new T.MeshBasicMaterial({ color: new T.Color(c).multiplyScalar(k), side:T.DoubleSide });
+    const room = new T.Mesh(new T.BoxGeometry(18, 11, 18), lit(.035)); room.material.side = T.BackSide; room.position.y = 1; env.add(room);
+    const face = (m, x, y, z) => { m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m); return m; };
+    // wall of small round lights in front of the print. A flat panel mirrors only a narrow cone of directions,
+    // so the lights are dense (~4° apart) to show several glowing dots at once, like a studio LED ceiling
+    face(new T.Mesh(new T.PlaneGeometry(12, 7), lit(.06)), 0, .4, 7.3);
+    const disc = new T.CircleGeometry(.13, 32), halo = new T.CircleGeometry(.27, 32), ring = lit(.7);
+    for (let i = -6; i <= 6; i++) for (let j = -4; j <= 5; j++) {
+      const x = i * .62, y = j * .6 + (i & 1) * .3, fall = Math.exp(-(x * x + (y - .4) * (y - .4)) / 10); // brighter in the middle, fading out
+      face(new T.Mesh(halo, ring), x, y, 7.1); face(new T.Mesh(disc, lit(6 + 20 * fall)), x, y, 7);
+    }
+    // side strip boxes + top strip for grazing angles, softbox behind (lights the back), warm floor bounce
+    face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(4)), -7.5, .5, 1.5); face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(2.6)), 7.5, .5, 1.5);
+    face(new T.Mesh(new T.PlaneGeometry(9, 1.1), lit(2.4)), 0, 5.8, 1);
+    face(new T.Mesh(new T.PlaneGeometry(7, 4.5), lit(1.6)), 1, 1, -7.5); face(new T.Mesh(new T.PlaneGeometry(1, 6), lit(3)), -4, .5, -6.5);
+    face(new T.Mesh(new T.PlaneGeometry(14, 14), lit(.22, 0xffe7cc)), 0, -4.8, 0);
+    return env;
+  }
+  brushedMap() { // fine horizontal streaks: roughness (G) + bump for the brushed aluminium grain
+    const c = document.createElement('canvas'); c.width = 512; c.height = 1024; const x = c.getContext('2d'); x.fillStyle = 'rgb(96,96,96)'; x.fillRect(0, 0, 512, 1024);
+    for (let i = 0; i < 2600; i++) { const v = 60 + Math.random() * 90 | 0, y = Math.random() * 1024; x.fillStyle = `rgba(${v},${v},${v},${.25 + Math.random() * .5})`; x.fillRect(Math.random() * 512 - 256, y, 128 + Math.random() * 640, Math.random() < .8 ? 1 : 2); }
+    const t = new this.T.CanvasTexture(c); t.wrapS = t.wrapT = this.T.RepeatWrapping; return t;
+  }
+  metalFromPhoto(src) { // raw aluminium: light areas of the photo are bare metal → metalness map (B) + photo with those areas dimmed
+    const T = this.T, w = Math.min(1024, src.width), h = Math.round(src.height * w / src.width), mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+    const mc = mk(), dc = mk(), mx = mc.getContext('2d'), dx = dc.getContext('2d'); mx.drawImage(src, 0, 0, w, h);
+    const d = mx.getImageData(0, 0, w, h), a = d.data, e = new ImageData(new Uint8ClampedArray(a), w, h), b = e.data;
+    for (let i = 0; i < a.length; i += 4) {
+      const l = (a[i] * .2126 + a[i + 1] * .7152 + a[i + 2] * .0722) / 255, k = Math.min(1, Math.max(0, (l - .62) / .3)), m = .12 + .88 * k * k * (3 - 2 * k), f = 1 - .78 * m;
+      a[i] = a[i + 1] = a[i + 2] = m * 255 | 0; b[i] *= f; b[i + 1] *= f; b[i + 2] *= f;
+    }
+    mx.putImageData(d, 0, 0); dx.putImageData(e, 0, 0);
+    const dimTex = new T.CanvasTexture(dc); dimTex.encoding = T.sRGBEncoding;
+    return { metalTex: new T.CanvasTexture(mc), dimTex };
+  }
+  applyFinish(finish) {
+    // the photo's own colours come through the emissive channel (true to the file, not washed out by the studio);
+    // the studio only adds what a real panel adds on top: coat reflections and, for raw aluminium, bare-metal shine
+    const m = this.frontMat, br = finish === 'brushed', photo = this.photoTex || null;
+    m.color.setScalar(br ? .2 : 0); m.emissive.setScalar(photo ? 1 : 0);
+    Object.assign(m, br
+      ? { map:photo, emissiveMap:this.dimTex || photo, emissiveIntensity:.95, metalness:1, metalnessMap:this.metalTex || null, roughness:.22, roughnessMap:this.brushTex, bumpMap:this.brushTex, bumpScale:.0006, clearcoat:.3, clearcoatRoughness:.12, reflectivity:.5, envMapIntensity:.65 }
+      : { map:photo, emissiveMap:photo, emissiveIntensity:.9, metalness:0, metalnessMap:null, roughness:1, roughnessMap:null, bumpMap:null, clearcoat:1, clearcoatRoughness:.03, reflectivity:0, envMapIntensity:1 });
+    if (!photo) m.color.setScalar(1);
+    m.needsUpdate = true;
+  }
+  makePlate(gW, gH, D) { // rounded aluminium panel with a small polished bevel; the photo sits on the flat face
+    const T = this.T, bev = D * .3, w = gW - 2 * bev, h = gH - 2 * bev, r = Math.min(gW, gH) * .016;
+    const sh = new T.Shape(); sh.moveTo(-w / 2 + r, -h / 2); sh.lineTo(w / 2 - r, -h / 2); sh.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); sh.lineTo(w / 2, h / 2 - r); sh.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2); sh.lineTo(-w / 2 + r, h / 2); sh.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); sh.lineTo(-w / 2, -h / 2 + r); sh.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+    const body = new T.ExtrudeGeometry(sh, { depth: D - 2 * bev, bevelEnabled:true, bevelThickness:bev, bevelSize:bev, bevelSegments:3, curveSegments:6 }); body.translate(0, 0, -(D - 2 * bev) / 2);
+    const g = new T.Group(); g.add(new T.Mesh(body, [this.backMat, this.edgeMat]));
+    const face = new T.ShapeGeometry(sh, 6), uv = face.attributes.uv, pos = face.attributes.position;
+    for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + w / 2) / w, (pos.getY(i) + h / 2) / h);
+    const fm = new T.Mesh(face, this.frontMat); fm.position.z = D / 2 + .0004; g.add(fm);
+    return g;
   }
   buildHardware(mount) {
     const T = this.T; if (!this.dims) return; const { gW, gH } = this.dims; this.hw.clear();

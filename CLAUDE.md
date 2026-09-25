@@ -27,6 +27,8 @@ Copy of metaleks.com (custom HD metal prints), deliberately trimmed. Owner: Mikh
 ## Customizer (popup wizard, like the reference)
 Product page → "START CREATING" opens a popup: Upload → Frame & Crop (drag, zoom, rotate, Smart Focus, Original ratio, quality check) → S.HD compare (slider, 1–3× zoom, watermark, consent) → Size & Mounting (three.js 3D viewer with auto-rotate/inertia, back view with hardware + hotspots, 3 rooms to scale). Idol product skips crop/S.HD. Hexagon/collage paths are legacy and hidden.
 - 3D: three.js r126 + OrbitControls from cdn.jsdelivr.net (needs internet); CSS 3D fallback if WebGL/CDN unavailable. Class `PrintViewer`.
+  Look: procedural HDR studio (`studio()`: grid of round lights + strips, PMREM) mirrored by a clearcoat; the photo is drawn via `emissiveMap` so the studio only adds highlights (no wash-out). Gloss = clearcoat 1, no base reflection; Brushed = metalness map from photo lightness + brushed roughness/bump streaks. Rounded bevelled plate (`makePlate`), mouse-hover tilt.
+- `_ref/` (gitignored) — reference-site code for study only, never commit or copy verbatim.
 
 ## Reference analysis (metaleks.com)
 Their S.HD = Cloudflare worker (server AI), uploads go to Cloudflare R2 with GitHub/Cloudinary fallbacks, blur check via Laplacian variance in browser, 3D via three.js r126 (ACES tone mapping, EXR env map, damping 0.1, autoRotate in front view, camera tween to back "scene" mode).
