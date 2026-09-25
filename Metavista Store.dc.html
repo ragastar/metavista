@@ -907,7 +907,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
               <p style="margin:8px 0 12px;font-size:12px;color:#6B6B6B">Click hexes to add/remove · {{ hexCount }} hexagons selected · Wall area ≈ {{ hexArea }}</p>
             </sc-if>
             <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
-              <div style="position:relative;width:100%;aspect-ratio:1/1;max-height:62vh;border-radius:18px;overflow:hidden;background:#0D0D0D;margin:0 auto">
+              <div style="position:relative;width:100%;aspect-ratio:1/1;max-height:62vh;border-radius:18px;overflow:hidden;background:radial-gradient(120% 95% at 50% 38%,#3a3b3e 0%,#1c1d1f 48%,#0b0b0c 100%);margin:0 auto">
                 <!-- WebGL 3D viewer (three.js) — stays mounted while switching tabs -->
                 <div ref="{{ viewerRef }}" style="{{ viewerStyle }}"></div>
                 <!-- CSS 3D fallback while three.js loads / if WebGL is unavailable -->
@@ -1339,87 +1339,164 @@ const BACK_SPOTS = {
 // ================= 3D PRINT VIEWER (three.js r126 — same stack and tuning as the reference) =================
 const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.126.1/';
 const THREE_SRC = [THREE_CDN + 'build/three.min.js', THREE_CDN + 'examples/js/controls/OrbitControls.js'];
-const EXR_SRC = [THREE_CDN + 'examples/js/libs/fflate.min.js', THREE_CDN + 'examples/js/loaders/EXRLoader.js'];
-const STUDIO_EXR = './assets/blue_photo_studio_1k.exr'; // Poly Haven "Blue Photo Studio" (CC0) — the photo-studio HDRI the reference uses
 const addScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = () => rej(new Error('failed to load ' + src)); document.head.appendChild(s); });
 let _threeP = null;
+const THREE_LOCAL = './vendor/three-r126-mv.min.js'; // slim self-hosted build of r126 + OrbitControls (tools/three-build) — one same-origin request
 const loadThree = () => _threeP || (_threeP = (async () => {
+  if (!window.THREE) { try { await addScript(THREE_LOCAL); } catch (e) { console.warn('[3D] local three.js failed, using CDN', e); } }
   if (!window.THREE) await addScript(THREE_SRC[0]);
   if (!window.THREE.OrbitControls) await addScript(THREE_SRC[1]);
   const c = document.createElement('canvas'); if (!(c.getContext('webgl2') || c.getContext('webgl'))) throw new Error('WebGL unavailable');
   return window.THREE;
 })().catch(e => { _threeP = null; throw e; }));
-// studio HDRI, shared by all viewers; resolves null when it can't load (the viewer keeps its procedural fallback studio)
-let _studioP = null;
-const loadStudio = T => _studioP || (_studioP = (async () => {
-  if (!window.fflate) await addScript(EXR_SRC[0]);
-  if (!T.EXRLoader) await addScript(EXR_SRC[1]);
-  const tex = await new Promise((res, rej) => new T.EXRLoader().load(STUDIO_EXR, res, undefined, rej));
-  tex.mapping = T.EquirectangularReflectionMapping; return tex;
-})().catch(e => { console.warn('[3D] studio HDRI unavailable, using fallback studio', e); _studioP = null; return null; }));
-// direction of the LED light panel in the HDRI (equirect u≈0.6, slightly above the horizon), as orbit angles
-const YAW = .94, LIFT = .12;
+// studio HDRI — Poly Haven "Blue Photo Studio" (CC0), shipped as an 18 KB log-encoded WebP (tools/env) instead of a 1.5 MB EXR
+const STUDIO_ENV = './assets/studio-env.webp', ENV_LO = -10, ENV_HI = 10.25; // LO/HI must match convert-env.mjs
+let _envDataP = null;
+const loadEnvData = () => _envDataP || (_envDataP = (async () => {
+  const im = new Image(); im.decoding = 'async'; im.src = STUDIO_ENV; await im.decode();
+  const w = im.naturalWidth, h = im.naturalHeight, c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
+  const src = x.getImageData(0, 0, w, h).data, out = new Uint8Array(w * h * 4);
+  // per byte: linear value, and for the brightest channel the RGBE exponent + mantissa scale (three: rgb/255 · 2^(a−128))
+  const lin = new Float32Array(256), ex = new Uint8Array(256), sc = new Float32Array(256);
+  for (let b = 1; b < 256; b++) { lin[b] = 2 ** (ENV_LO + b / 255 * (ENV_HI - ENV_LO)); const e = Math.ceil(Math.log2(lin[b])); ex[b] = e + 128; sc[b] = 255 / 2 ** e; }
+  let lo = 255, hi = 0;
+  for (let y = 0; y < h; y++) for (let i = y * w * 4, o = (h - 1 - y) * w * 4, e = i + w * 4; i < e; i += 4, o += 4) { // rows written bottom-up → flipY stays false
+    const r = src[i], g = src[i + 1], b = src[i + 2], m = r > g ? (r > b ? r : b) : (g > b ? g : b); if (!m) continue;
+    if (m < lo) lo = m; if (m > hi) hi = m;
+    const k = sc[m]; out[o] = Math.min(255, Math.round(lin[r] * k)); out[o + 1] = Math.min(255, Math.round(lin[g] * k)); out[o + 2] = Math.min(255, Math.round(lin[b] * k)); out[o + 3] = ex[m];
+  }
+  if (hi - lo < 16) throw new Error('env read-back blocked'); // canvas read-back disabled (privacy mode) → keep the fallback studio
+  return { out, w, h };
+})().catch(e => { _envDataP = null; throw e; }));
+// → Promise<Texture> (PMREM cube-UV texture for scene.environment); rejects if the file can't load
+const loadStudioEnv = async (T, renderer) => {
+  const { out, w, h } = await loadEnvData();
+  const tex = new T.DataTexture(out, w, h, T.RGBAFormat, T.UnsignedByteType);
+  tex.encoding = T.RGBEEncoding; tex.minFilter = tex.magFilter = T.NearestFilter; tex.generateMipmaps = false; tex.flipY = false; tex.needsUpdate = true;
+  const pm = new T.PMREMGenerator(renderer), rt = pm.fromEquirectangular(tex); pm.dispose(); tex.dispose();
+  return rt.texture;
+};
+// rig orientation inside the studio HDRI: seen head-on, the print mirrors a dark part of the studio (clean photo, no glare);
+// turning it a little to the left sweeps the round LED panel's glint across it. Measured: yaw .94 = brightest (glare), 2.0–3.0 = dark.
+const YAW = 2.1, LIFT = .12;
+// product-shot lens: narrow FOV from further away (no keystone distortion); distances are scaled from the reference's 75° setup
+const FOV = 30, FOV_K = Math.tan(75 / 2 * Math.PI / 180) / Math.tan(FOV / 2 * Math.PI / 180);
+const studioScene = T => { // procedural fallback studio (used until / unless the HDRI loads): soft ceiling lights, side strips, floor bounce
+  const env = new T.Scene(), rig = new T.Group(), lit = (k, c = 0xffffff) => new T.MeshBasicMaterial({ color: new T.Color(c).multiplyScalar(k), side:T.DoubleSide });
+  const room = new T.Mesh(new T.BoxGeometry(18, 11, 18), lit(.08)); room.material.side = T.BackSide; room.position.y = 1; env.add(room);
+  env.add(rig); rig.rotation.y = YAW; // lights built around +z, turned to where the camera looks from
+  const face = (m, x, y, z) => { m.position.set(x, y, z); m.lookAt(0, 0, 0); rig.add(m); return m; };
+  const disc = new T.CircleGeometry(.35, 32);
+  for (let i = -2; i <= 2; i++) for (let j = -1; j <= 2; j++) face(new T.Mesh(disc, lit(3)), i * 1.6, j * 1.5, 7);
+  face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(2)), -7.5, .5, 1.5); face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(1.4)), 7.5, .5, 1.5);
+  face(new T.Mesh(new T.PlaneGeometry(7, 4.5), lit(1)), 1, 1, -7.5);
+  face(new T.Mesh(new T.PlaneGeometry(14, 14), lit(.3, 0xffe7cc)), 0, -4.8, 0);
+  return env;
+};
+let _eng = null;
+const getEngine = T => {
+  if (_eng) return _eng;
+  const r = new T.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' });
+  r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 1; r.setClearColor(0x000000, 0);
+  r.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:grab;outline:none';
+  const pm = new T.PMREMGenerator(r), eng = _eng = { r, pm, env:null };
+  // environment prefiltered with PMREM → physically correct soft/sharp reflections per roughness (no blown-out light blobs)
+  const fbScene = studioScene(T); eng.fallback = pm.fromScene(fbScene, .04).texture; fbScene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  eng.envP = loadStudioEnv(T, r).then(t => { if (_eng !== eng) return null; eng.env = t; return t; }).catch(e => { console.warn('[3D] studio HDRI unavailable, using fallback studio', e); return null; });
+  r.domElement.addEventListener('webglcontextlost', e => { e.preventDefault(); if (_eng === eng) _eng = null; });
+  return eng;
+};
+// start downloading + warming up 3D as soon as someone opens the wizard, so the Size step shows it instantly
+const prewarm3d = () => { loadEnvData().catch(() => {}); loadThree().then(T => getEngine(T)).catch(() => {}); }; // both downloads run in parallel
 const easeInOutCubic = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const easeOutCubic = x => 1 - Math.pow(1 - x, 3);
 const easeOutBack = x => { const c1 = 1.4, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 
 class PrintViewer {
   constructor(el, T) {
-    this.T = T; this.el = el; this.o = {}; this.dead = false; this.tweens = [];
-    const r = this.renderer = new T.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 1;
-    r.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:grab;outline:none';
+    this.T = T; this.el = el; this.o = {}; this.dead = false; this.tweens = []; this.dirty = true; this.inView = true;
+    const eng = getEngine(T), r = this.renderer = eng.r;
     el.appendChild(r.domElement);
-    const scene = this.scene = new T.Scene(); scene.background = new T.Color(0x0d0d0d);
-    // environment: the photo-studio HDRI (soft ceiling lights → the round glows on the print); procedural studio until it arrives
-    const pm = new T.PMREMGenerator(r); scene.environment = pm.fromScene(this.studio(), .04).texture; pm.dispose();
-    loadStudio(T).then(tex => { if (tex && !this.dead) scene.environment = tex; });
+    const scene = this.scene = new T.Scene(); // transparent: the studio backdrop is a CSS gradient behind the canvas
+    // environment: the photo-studio HDRI through PMREM; procedural studio until it arrives
+    scene.environment = eng.env || eng.fallback;
+    if (!eng.env) eng.envP.then(t => { if (t && !this.dead) { scene.environment = t; this.dirty = true; } });
     scene.add(new T.AmbientLight(0xffffff, .7));
     const pl = new T.PointLight(0xffffff, .6, 1100); pl.position.set(-5, 3, -2); scene.add(pl);
     // wide-angle camera close to the print (like the reference): strong perspective, so the print mirrors a wide slice of the studio
     // the whole rig (print + camera) is turned to YAW so the print, seen head-on, mirrors the studio's round LED panel
-    this.camR = 1.2; this.yaw = YAW;
-    const cam = this.camera = new T.PerspectiveCamera(75, 1, .01, 100); cam.position.setFromSpherical(new T.Spherical(this.camR, Math.PI / 2 - LIFT, YAW));
+    this.camR = 1.2 * FOV_K; this.yaw = YAW;
+    const cam = this.camera = new T.PerspectiveCamera(FOV, 1, .05, 100); cam.position.setFromSpherical(new T.Spherical(this.camR, Math.PI / 2 - LIFT, YAW));
     const ctl = this.controls = new T.OrbitControls(cam, r.domElement);
     Object.assign(ctl, { enableDamping:true, dampingFactor:.1, enablePan:false, rotateSpeed:.75, minDistance:.65, maxDistance:2.2, minPolarAngle:Math.PI * .22, maxPolarAngle:Math.PI * .78 });
     ctl.addEventListener('start', () => { this.drag = true; this.spin = null; r.domElement.style.cursor = 'grabbing'; });
     ctl.addEventListener('end', () => { this.drag = false; r.domElement.style.cursor = 'grab'; });
+    ctl.addEventListener('change', () => { this.dirty = true; });
     this.group = new T.Group(); scene.add(this.group); this.hw = new T.Group(); this.group.add(this.hw);
     // mouse hover tilts the print a little so the highlights glide across it
     this.tilt = { x:0, y:0, tx:0, ty:0 };
-    r.domElement.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || this.drag) return; const b = r.domElement.getBoundingClientRect(); this.tilt.ty = ((e.clientX - b.left) / b.width - .5) * .22; this.tilt.tx = ((e.clientY - b.top) / b.height - .5) * .16; });
-    r.domElement.addEventListener('pointerleave', () => { this.tilt.tx = this.tilt.ty = 0; });
+    this._onMove = e => { if (e.pointerType !== 'mouse' || this.drag) return; const b = r.domElement.getBoundingClientRect(); this.tilt.ty = ((e.clientX - b.left) / b.width - .5) * .22; this.tilt.tx = ((e.clientY - b.top) / b.height - .5) * .16; };
+    this._onLeave = () => { this.tilt.tx = this.tilt.ty = 0; };
+    r.domElement.addEventListener('pointermove', this._onMove); r.domElement.addEventListener('pointerleave', this._onLeave);
     this.brushTex = this.brushedMap();
     this.edgeMat = new T.MeshStandardMaterial({ color:0xd0d0d8, metalness:.7, roughness:.3 });
-    this.backMat = new T.MeshStandardMaterial({ color:0xc9ccd1, metalness:.5, roughness:.5, roughnessMap:this.brushTex, bumpMap:this.brushTex, bumpScale:.0004 });
-    this.frontMat = new T.MeshStandardMaterial({ color:0xcccccc, metalness:.3, roughness:.7 });
-    this.hwMat = new T.MeshStandardMaterial({ color:0x55595f, metalness:.85, roughness:.32, envMapIntensity:1.1 });
+    this.backMat = new T.MeshStandardMaterial({ color:0xa9adb3, metalness:.8, roughness:.42, roughnessMap:this.brushTex, bumpMap:this.brushTex, bumpScale:.0004, envMapIntensity:.85 });
+    // print face: the photo is shown with its true colours (emissive, not tone-mapped); lighting only adds sheen, reflections and the gloss coat on top
+    this.frontMat = new T.MeshPhysicalMaterial({ color:0xffffff, metalness:0, roughness:.5, toneMapped:false });
+    this.hwMat = new T.MeshStandardMaterial({ color:0x3a3d42, metalness:1, roughness:.22, envMapIntensity:1 });
     this.darkMat = new T.MeshStandardMaterial({ color:0x2a2d31, metalness:.3, roughness:.6 });
     // hotspot layer (DOM, positioned from 3D each frame)
     const lay = this.layer = document.createElement('div'); lay.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden'; el.appendChild(lay);
     this.spots = [];
     this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el); this.resize();
-    this.pop = { s:.6, t0: performance.now() };
+    // pause entirely while scrolled out of view
+    this.io = new IntersectionObserver(es => { this.inView = es[es.length - 1].isIntersecting; if (this.inView) this.dirty = true; }); this.io.observe(el);
+    // touch: OrbitControls r126 blocks page scrolling on any touch. On touch screens, a vertical swipe scrolls the wizard (to size / Add to cart),
+    // a horizontal swipe spins the print (with inertia); two fingers still go to OrbitControls (pinch zoom).
+    this.coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches; this.vel = 0;
+    if (this.coarse) {
+      r.domElement.style.touchAction = 'pan-y';
+      const tc = this._touch = {};
+      this._onTS = e => { if (e.target !== r.domElement || e.touches.length > 1) { tc.on = false; return; } e.stopPropagation(); const t = e.touches[0]; Object.assign(tc, { on:true, x:t.clientX, y:t.clientY, lx:t.clientX, lt:performance.now(), mode:null }); };
+      this._onTM = e => { if (!tc.on || e.touches.length > 1) return; e.stopPropagation(); const t = e.touches[0];
+        if (!tc.mode) { const dx = t.clientX - tc.x, dy = t.clientY - tc.y; if (Math.hypot(dx, dy) < 7) return; tc.mode = Math.abs(dx) > Math.abs(dy) ? 'spin' : 'scroll'; if (tc.mode === 'spin') { this.drag = true; this.spin = null; } }
+        if (tc.mode !== 'spin') return;
+        const now = performance.now(), d = -(t.clientX - tc.lx) * Math.PI / this.el.clientWidth; this.orbitBy(d); this.vel = Math.max(-.05, Math.min(.05, d / Math.max(8, now - tc.lt) * 16)); tc.lx = t.clientX; tc.lt = now; };
+      this._onTE = e => { if (!tc.on) return; e.stopPropagation(); tc.on = false; if (tc.mode === 'spin') this.drag = false; else this.vel = 0; };
+      el.addEventListener('touchstart', this._onTS, { capture:true, passive:true }); el.addEventListener('touchmove', this._onTM, { capture:true, passive:true });
+      el.addEventListener('touchend', this._onTE, { capture:true, passive:true }); el.addEventListener('touchcancel', this._onTE, { capture:true, passive:true });
+    }
+    if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) this.pop = { s:.6, t0: performance.now() };
     const loop = () => { if (this.dead) return; this.raf = requestAnimationFrame(loop); this.frame(); };
     loop();
   }
-  resize() { const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); }
+  orbitBy(d) { const T = this.T, t = this.controls.target, s = new T.Spherical().setFromVector3(this.camera.position.clone().sub(t)); s.theta += d; this.camera.position.setFromSpherical(s).add(t); this.camera.lookAt(t); this.dirty = true; }
+  resize() { const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return; this.renderer.setSize(w, h, false); this.camera.aspect = w / h; this.camera.updateProjectionMatrix(); this.dirty = true; }
   tween(ms, fn, done) { this.tweens.push({ t0: performance.now(), ms, fn, done }); }
   frame() {
-    if (!this.el.isConnected || this.o.visible === false) return; // hidden tab → skip rendering
+    if (!this.el.isConnected || this.o.visible === false || !this.inView || document.hidden) return; // hidden → no work at all
     const now = performance.now();
+    if (this.vel && !this.drag) { this.orbitBy(this.vel); this.vel *= .88; if (Math.abs(this.vel) < 1e-4) this.vel = 0; } // touch-spin inertia
+    const busy = this.tweens.length || this.pop || this.spin || this.drag || this.vel;
     this.tweens = this.tweens.filter(tw => { const k = Math.min(1, (now - tw.t0) / tw.ms); tw.fn(k); if (k >= 1) { tw.done && tw.done(); return false; } return true; });
     // pop-in when a new print appears
     if (this.pop) { const k = Math.min(1, (now - this.pop.t0) / 650), s = this.pop.s + (1 - this.pop.s) * easeOutBack(k); this.group.scale.setScalar(s); if (k >= 1) this.pop = null; }
     // one full turn when a print appears (as the reference does), then it waits for the user
     let spinY = 0; if (this.spin) { const k = Math.min(1, (now - this.spin.t0) / 1900); spinY = Math.PI * 2 * easeOutCubic(k); if (k >= 1) this.spin = null; }
-    const tl = this.tilt, on = this.o.mode !== 'back' && !this.drag; tl.x += ((on ? tl.tx : 0) - tl.x) * .08; tl.y += ((on ? tl.ty : 0) - tl.y) * .08; this.group.rotation.set(0, this.yaw + tl.y + spinY, 0); this.group.rotateX(tl.x);
-    this.controls.update();
+    const tl = this.tilt, on = this.o.mode !== 'back' && !this.drag, gx = on ? tl.tx : 0, gy = on ? tl.ty : 0, tilting = Math.abs(gx - tl.x) > 1e-4 || Math.abs(gy - tl.y) > 1e-4;
+    tl.x += (gx - tl.x) * .08; tl.y += (gy - tl.y) * .08; this.group.rotation.set(0, this.yaw + tl.y + spinY, 0); this.group.rotateX(tl.x);
+    const moved = this.controls.update();
+    if (this.shadow) { const n = this._n || (this._n = new this.T.Vector3()), d = n.set(0, 0, 1).applyQuaternion(this.group.quaternion).dot(this.camera.position.clone().sub(this.controls.target).normalize());
+      const k = this.o.mode === 'back' ? 0 : Math.pow(Math.max(0, d), 6) * .62; this.shadowMat.opacity = k; this.shadow.visible = k > .01; }
+    // render only when something changes: idle viewer costs ~nothing (battery, fans, other tabs)
+    if (!(busy || tilting || moved || this.dirty)) return;
+    this.dirty = false;
     this.renderer.render(this.scene, this.camera);
     this.placeSpots();
   }
   update(o) {
-    const T = this.T, p = this.o; this.o = { ...o };
+    const T = this.T, p = this.o; this.o = { ...o }; this.dirty = true;
     if (o.img !== p.img || o.aspect !== p.aspect || o.wm !== p.wm) this.setPrint(o);
     if (o.finish !== p.finish) this.applyFinish(o.finish);
     if (o.mount !== p.mount || o.aspect !== p.aspect) this.buildHardware(o.mount);
@@ -1430,35 +1507,30 @@ class PrintViewer {
     const T = this.T, a = o.aspect || .75, L = 1.25, gW = a >= 1 ? L : L * a, gH = a >= 1 ? L / a : L, D = .008; this.dims = { gW, gH, D };
     if (this.plate) { this.group.remove(this.plate); this.plate.traverse(m => m.geometry && m.geometry.dispose()); }
     this.plate = this.makePlate(gW, gH, D); this.group.add(this.plate);
+    if (!this.shadow) { // soft drop shadow "on the wall" behind the print; fades out as the print turns away
+      const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d'); x.filter = 'blur(22px)'; x.fillStyle = '#000'; x.fillRect(46, 46, 164, 164);
+      this.shadowTex = new T.CanvasTexture(c); this.shadowMat = new T.MeshBasicMaterial({ map:this.shadowTex, color:0x000000, transparent:true, opacity:0, depthWrite:false, toneMapped:false });
+      this.shadow = new T.Mesh(new T.PlaneGeometry(1, 1), this.shadowMat); this.shadow.renderOrder = -1; this.group.add(this.shadow); }
+    this.shadow.scale.set(gW * 1.6, gH * 1.6, 1); this.shadow.position.set(.012, -.03, -D / 2 - .09);
     this.hw.position.z = -D / 2;
     // camera distance as in the reference, scaled to our plate (their 3.4-unit print ↔ our 1.25): portraits sit a bit further back
-    this.camR = (a >= 1 ? 3.2 : Math.min(2.8 / a * .92, 3.8)) * (L / 3.4);
+    // frame the print so its long side fills ~66 % of the (square) view, whatever its proportions
+    this.camR = Math.max(gW, gH) / 2 / Math.tan(FOV / 2 * Math.PI / 180) / .66 + D;
     Object.assign(this.controls, { minDistance: this.camR * .55, maxDistance: this.camR * 1.8 });
     if (!this.animating) { const c = this.camera, t = this.controls.target; c.position.sub(t).setLength(this.camR).add(t); }
     if (!o.img) return;
     const im = new Image(); im.onload = () => {
-      if (this.dead) return; const s = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
-      const x = c.getContext('2d'); x.drawImage(im, 0, 0, c.width, c.height);
+      if (this.dead) return; const cap = Math.min(this.renderer.capabilities.maxTextureSize, innerWidth > 720 ? 2048 : 1600), s = Math.min(1, cap / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
+      const x = c.getContext('2d', { willReadFrequently:true }); x.imageSmoothingQuality = 'high'; x.drawImage(im, 0, 0, c.width, c.height);
       if (o.wm) { x.save(); x.globalAlpha = .38; x.fillStyle = '#fff'; x.font = `700 ${Math.round(c.width / 26)}px Arial, sans-serif`; x.translate(c.width / 2, c.height / 2); x.rotate(-.42); const step = c.width / 2.6; for (let yy = -c.height; yy < c.height; yy += step / 1.6) for (let xx = -c.width; xx < c.width; xx += step) x.fillText('METAVISTA · PREVIEW', xx + (Math.round(yy / step) % 2) * step / 2, yy); x.restore(); }
-      [this.photoTex, this.brushedTex].forEach(t => t && t.dispose()); this.photoTex = this.tex(c); this.brushedTex = null; this.photoCanvas = c;
+      [this.photoTex].forEach(t => t && t.dispose()); if (this.brushed) Object.values(this.brushed).forEach(t => t.dispose()); this.photoTex = this.tex(c); this.brushed = null; this.photoCanvas = c;
       this.applyFinish(this.o.finish);
-      this.pop = { s:.82, t0: performance.now() };
-      if (this.o.mode !== 'back' && !this.drag) this.spin = { t0: performance.now() };
+      const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; // no pop / spin for people who asked for less motion
+      if (!calm) { this.pop = { s:.82, t0: performance.now() }; if (this.o.mode !== 'back' && !this.drag) this.spin = { t0: performance.now() }; }
+      this.dirty = true;
     }; im.src = o.img;
   }
-  tex(canvas) { const T = this.T, t = new T.CanvasTexture(canvas); t.encoding = T.sRGBEncoding; t.minFilter = T.LinearMipmapLinearFilter; t.anisotropy = Math.min(this.renderer.capabilities.getMaxAnisotropy(), 8); return t; }
-  studio() { // procedural fallback studio (used until / unless the HDRI loads): soft ceiling lights, side strips, floor bounce
-    const T = this.T, env = new T.Scene(), rig = new T.Group(), lit = (k, c = 0xffffff) => new T.MeshBasicMaterial({ color: new T.Color(c).multiplyScalar(k), side:T.DoubleSide });
-    const room = new T.Mesh(new T.BoxGeometry(18, 11, 18), lit(.08)); room.material.side = T.BackSide; room.position.y = 1; env.add(room);
-    env.add(rig); rig.rotation.y = YAW; // lights built around +z, turned to where the camera looks from
-    const face = (m, x, y, z) => { m.position.set(x, y, z); m.lookAt(0, 0, 0); rig.add(m); return m; };
-    const disc = new T.CircleGeometry(.35, 32);
-    for (let i = -2; i <= 2; i++) for (let j = -1; j <= 2; j++) face(new T.Mesh(disc, lit(3)), i * 1.6, j * 1.5, 7);
-    face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(2)), -7.5, .5, 1.5); face(new T.Mesh(new T.PlaneGeometry(1.3, 7), lit(1.4)), 7.5, .5, 1.5);
-    face(new T.Mesh(new T.PlaneGeometry(7, 4.5), lit(1)), 1, 1, -7.5);
-    face(new T.Mesh(new T.PlaneGeometry(14, 14), lit(.3, 0xffe7cc)), 0, -4.8, 0);
-    return env;
-  }
+  tex(canvas) { const T = this.T, t = new T.CanvasTexture(canvas); t.encoding = T.sRGBEncoding; t.minFilter = T.LinearMipmapLinearFilter; t.anisotropy = Math.min(this.renderer.capabilities.getMaxAnisotropy(), 16); return t; }
   brushedMap() { // fine horizontal streaks: roughness (G) + bump for the brushed aluminium back
     const c = document.createElement('canvas'); c.width = 512; c.height = 1024; const x = c.getContext('2d'); x.fillStyle = 'rgb(96,96,96)'; x.fillRect(0, 0, 512, 1024);
     for (let i = 0; i < 2600; i++) { const v = 60 + Math.random() * 90 | 0, y = Math.random() * 1024; x.fillStyle = `rgba(${v},${v},${v},${.25 + Math.random() * .5})`; x.fillRect(Math.random() * 512 - 256, y, 128 + Math.random() * 640, Math.random() < .8 ? 1 : 2); }
@@ -1476,13 +1548,35 @@ class PrintViewer {
     const [out, ox] = mk(); ox.filter = 'brightness(130%) contrast(200%)'; ox.drawImage(base, 0, 0);
     return out;
   }
+  brushedMaps(src) { // for the brushed finish: where the photo is light, the print is bare brushed aluminium (metal, streaky roughness)
+    const w = src.width, h = src.height, mk = () => { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d', { willReadFrequently:true })]; };
+    const comp = this.brushedPhoto(src), [mr, mx] = mk(), [em, ex] = mk();
+    const lum = src.getContext('2d', { willReadFrequently:true }).getImageData(0, 0, w, h).data, cd = comp.getContext('2d').getImageData(0, 0, w, h).data;
+    const md = mx.createImageData(w, h), ed = ex.createImageData(w, h), streak = new Float32Array(h);
+    for (let y = 0; y < h; y++) streak[y] = Math.random();
+    for (let i = 0, p = 0; i < lum.length; i += 4, p++) {
+      const L = (lum[i] * .299 + lum[i + 1] * .587 + lum[i + 2] * .114) / 255, metal = Math.min(1, Math.max(0, (L - .5) / .4)), y = (p / w) | 0;
+      const rough = .28 + .16 * streak[y] + .1 * Math.random();
+      md.data[i] = 0; md.data[i + 1] = rough * 255; md.data[i + 2] = metal * 255; md.data[i + 3] = 255; // G = roughness, B = metalness (three's channels)
+      const k = 1 - .38 * metal; ed.data[i] = cd[i] * k; ed.data[i + 1] = cd[i + 1] * k; ed.data[i + 2] = cd[i + 2] * k; ed.data[i + 3] = 255; // bare metal isn't "lit from inside"
+    }
+    mx.putImageData(md, 0, 0); ex.putImageData(ed, 0, 0);
+    const mrT = new this.T.CanvasTexture(mr); mrT.anisotropy = this.tex(mr).anisotropy;
+    return { color: this.tex(comp), emissive: this.tex(em), mr: mrT };
+  }
   applyFinish(finish) {
-    const m = this.frontMat;
+    const m = this.frontMat, T = this.T;
     if (!this.photoTex) return;
-    if (finish === 'brushed' && !this.brushedTex) this.brushedTex = this.tex(this.brushedPhoto(this.photoCanvas));
-    // the reference's print surface: a semi-matte coated panel that softly picks up the studio lights
-    Object.assign(m, { map: finish === 'brushed' ? this.brushedTex : this.photoTex, metalness:.25, roughness:.65, envMapIntensity:.5 });
-    m.color.set(0xffffff); m.needsUpdate = true;
+    if (finish === 'brushed') {
+      if (!this.brushed) this.brushed = this.brushedMaps(this.photoCanvas);
+      const b = this.brushed; // raw aluminium: metal where the photo is light, satin ink elsewhere, no coat
+      Object.assign(m, { map:b.color, emissiveMap:b.emissive, metalnessMap:b.mr, roughnessMap:b.mr, bumpMap:this.brushTex, bumpScale:.0006, metalness:1, roughness:1, clearcoat:0, envMapIntensity:1 });
+      m.color.setScalar(.55); m.emissive.setScalar(.72);
+    } else { // high-gloss white: vivid photo under a clear glossy coat that picks up crisp studio reflections
+      Object.assign(m, { map:this.photoTex, emissiveMap:this.photoTex, metalnessMap:null, roughnessMap:null, bumpMap:null, metalness:0, roughness:.45, clearcoat:1, clearcoatRoughness:.07, envMapIntensity:.7 });
+      m.color.setScalar(.2); m.emissive.setScalar(.84);
+    }
+    m.needsUpdate = true; this.dirty = true;
   }
   makePlate(gW, gH, D) { // rounded aluminium panel with a small polished bevel; the photo sits on the flat face
     const T = this.T, bev = D * .3, w = gW - 2 * bev, h = gH - 2 * bev, r = Math.min(gW, gH) * .016;
@@ -1495,10 +1589,11 @@ class PrintViewer {
     return g;
   }
   buildHardware(mount) {
-    const T = this.T; if (!this.dims) return; const { gW, gH } = this.dims; this.hw.clear();
+    const T = this.T; if (!this.dims) return; const { gW, gH } = this.dims;
+    this.hw.children.forEach(m => { m.geometry.dispose(); if (m.material !== this.hwMat && m.material !== this.darkMat) m.material.dispose(); }); this.hw.clear();
     const add = (geo, mat, x, y, z, rx = 0) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.x = rx; this.hw.add(m); return m; };
     if (mount === 'float') { add(new T.BoxGeometry(gW * .38, gH * .38, .07), this.darkMat, 0, 0, -.035); add(new T.CylinderGeometry(.018, .018, .01, 20), this.hwMat, 0, gH * .12, -.075, Math.PI / 2); }
-    else if (mount === 'magnet') { [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => add(new T.CylinderGeometry(.05, .05, .014, 32), this.hwMat, sx * gW * .36, sy * gH * .38, -.007, Math.PI / 2)); add(new T.BoxGeometry(gW * .42, gH * .3, .004), new T.MeshStandardMaterial({ color:0xf1f1f1, metalness:.1, roughness:.8 }), 0, 0, -.004); }
+    else if (mount === 'magnet') { [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => add(new T.CylinderGeometry(.05, .05, .014, 32), this.hwMat, sx * gW * .36, sy * gH * .38, -.007, Math.PI / 2)); add(new T.BoxGeometry(gW * .42, gH * .3, .004), new T.MeshStandardMaterial({ color:0xc4c6c9, metalness:.35, roughness:.6 }), 0, 0, -.004); }
     else {
       add(new T.BoxGeometry(gW * .56, .05, .022), this.hwMat, 0, gH * .36, -.011);
       // kickstand: top end rests against the back, bottom end kicks out away from the plate
@@ -1535,7 +1630,13 @@ class PrintViewer {
     const n = new T.Vector3(0, 0, -1).applyQuaternion(this.group.quaternion), toCam = this.camera.position.clone().normalize(), vis = n.dot(toCam) > .15 && !this.animating;
     this.spots.forEach(s => { const p = s.v.clone().applyMatrix4(this.group.matrixWorld).project(this.camera); const x = (p.x + 1) / 2 * w, y = (1 - p.y) / 2 * h; const st = `translate(${x}px,${y}px)`; s.b.style.transform = st; s.tip.style.left = x + 'px'; s.tip.style.top = y + 'px'; s.b.style.display = vis ? 'block' : 'none'; if (!vis) s.tip.style.display = 'none'; });
   }
-  destroy() { this.dead = true; cancelAnimationFrame(this.raf); this.ro.disconnect(); this.controls.dispose(); this.renderer.dispose(); this.el.innerHTML = ''; }
+  destroy() { // free everything of this viewer; the shared renderer + environment stay alive for the next one
+    this.dead = true; cancelAnimationFrame(this.raf); this.ro.disconnect(); this.io.disconnect(); this.controls.dispose();
+    const c = this.renderer.domElement; c.removeEventListener('pointermove', this._onMove); c.removeEventListener('pointerleave', this._onLeave); c.style.touchAction = 'none';
+    if (this._onTS) { const o = { capture:true }; this.el.removeEventListener('touchstart', this._onTS, o); this.el.removeEventListener('touchmove', this._onTM, o); this.el.removeEventListener('touchend', this._onTE, o); this.el.removeEventListener('touchcancel', this._onTE, o); }
+    this.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material && !Array.isArray(o.material) && ![this.edgeMat, this.backMat, this.frontMat, this.hwMat, this.darkMat].includes(o.material)) o.material.dispose(); });
+    [this.edgeMat, this.backMat, this.frontMat, this.hwMat, this.darkMat, this.photoTex, this.brushTex, this.shadowMat, this.shadowTex, ...(this.brushed ? Object.values(this.brushed) : [])].forEach(x => x && x.dispose());
+    if (c.parentNode === this.el) this.el.removeChild(c); this.layer.remove(); this.renderer.renderLists.dispose(); }
 }
 
 const makeThumb = async url => { if (!url) return ''; const im = await loadImg(url); const c = drawScaled(im, 180); return c.toDataURL('image/jpeg', .8); };
@@ -1597,7 +1698,7 @@ class Component extends DCLogic {
   toastMsg(t) { this.setState({ toast:t }); clearTimeout(this._toastT); this._toastT = setTimeout(() => this.setState({ toast:'' }), 2200); }
   cz(patch) { this.setState(s => ({ cz: { ...s.cz, ...patch } })); }
   // ---------- wizard popup ----------
-  openWizard() { if (!(history.state && history.state.mvWiz)) history.pushState({ mvWiz:1 }, ''); this.setState({ wizOpen:true, cartOpen:false, menu:null }); }
+  openWizard() { if (this.fOn('preview_3d') || this.fOn('preview_back')) prewarm3d(); if (!(history.state && history.state.mvWiz)) history.pushState({ mvWiz:1 }, ''); this.setState({ wizOpen:true, cartOpen:false, menu:null }); }
   closeWizard(o = {}) { this._drag = this._cmp = this._rot = this._pinch = null; this._ptrs.clear(); this.setState({ wizOpen:false });
     if (!o.nav && history.state && history.state.mvWiz) { this._popSkip = true; history.back(); } } // drop the wizard's history entry
   stepBack() { const cz = this.state.cz, s = cz.step, p = this.product(), skip1 = (p.kind === 'rect' || p.kind === 'tabletop') && !this.state.features.photo_collage; this._drag = null;
@@ -1877,7 +1978,7 @@ class Component extends DCLogic {
       finishName: fin.t, mountName: (MOUNTS.find(m => m.id === cz.mount) || MOUNTS[0]).t,
       // 3D viewer (three.js) + CSS fallback
       viewerRef: this._vref || (this._vref = el => this.attachViewer(el)),
-      viewerStyle: { position:'absolute', inset:0, visibility: (pv === '3d' || pv === 'back') && S.three === 'ready' ? 'visible' : 'hidden' },
+      viewerStyle: { position:'absolute', inset:0, visibility: (pv === '3d' || pv === 'back') && S.three === 'ready' ? 'visible' : 'hidden', opacity: (pv === '3d' || pv === 'back') && S.three === 'ready' ? 1 : 0, transition:'opacity .35s ease, visibility .35s' },
       css3d: (pv === '3d' || pv === 'back') && S.three !== 'ready',
       // modals
       modalOrig: S.modal === 'orig', modalQDemo: S.modal === 'qdemo', modalFullEnh: S.modal === 'fullEnh',

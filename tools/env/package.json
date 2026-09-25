@@ -1,0 +1,8 @@
+{
+  "name": "metavista-env-tools",
+  "private": true,
+  "type": "module",
+  "description": "Regenerates assets/studio-env.webp from the studio EXR",
+  "scripts": { "build": "node convert-env.mjs && mv ../../assets/studio-env-log-1024-q80.webp ../../assets/studio-env.webp" },
+  "devDependencies": { "sharp": "^0.35.4", "three": "0.126.1" }
+}

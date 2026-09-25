@@ -2,3 +2,5 @@ _backup_*/
 _test/
 node_modules/
 _ref/
+tools/three-build/node_modules/
+_lab*

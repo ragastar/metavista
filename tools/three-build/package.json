@@ -1,0 +1,10 @@
+{
+  "name": "metavista-three-build",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build.mjs" },
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "three": "0.126.1"
+  }
+}
