@@ -1,6 +1,6 @@
 # Metavista — project notes
 
-Copy of metaleks.com (custom HD metal prints), deliberately trimmed. Owner: Mikhail Levin. UI text is English; talk to the owner in Russian, plain words.
+Copy of metaleks.com (custom HD metal prints), deliberately trimmed. Owner: Mikhail Levin. Store UI text is English; admin UI is Russian (store content inside it — products, FAQ, policies, reviews — stays English). Talk to the owner in Russian, plain words.
 
 ## Repo & deploy
 - GitHub: https://github.com/ragastar/metavista (public). Live site (GitHub Pages from `main`, root): https://ragastar.github.io/metavista/ — `index.html` redirects to the store; admin at `…/Metavista%20Admin.dc.html`. Every push to `main` redeploys in ~1–2 min.
@@ -21,7 +21,7 @@ Copy of metaleks.com (custom HD metal prints), deliberately trimmed. Owner: Mikh
 - Events: any `onXxx` incl. pointer events.
 
 ## Feature flags
-- `FEATURES` list is duplicated in both files — keep them in sync. Stored in `localStorage.mv_features` (defaults in code). Groups: Global, Menu, Products, Home page, Footer, Photo tools, S.HD & preview.
+- `FEATURES` list is duplicated in both files — keep keys/defaults in sync (labels/groups are Russian in admin, English in store). Stored in `localStorage.mv_features` (defaults in code). Groups: Global, Menu, Products, Home page, Footer, Photo tools, S.HD & preview.
 - `localStorage.mv_settings.shdEndpoint` — optional S.HD server (POST multipart `file` → image or JSON `{url}`); empty = in-browser enhancement (upscale + unsharp mask), also used as fallback.
 
 ## Customizer (popup wizard, like the reference)
