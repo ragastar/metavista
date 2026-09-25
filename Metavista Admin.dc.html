@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#FBFAF8;color:#141414;font-family:Montserrat,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#E8362D;text-decoration:none}a:hover{color:#F26A1B}
+input,textarea,button,select{font-family:inherit}
+button{cursor:pointer}
+@keyframes mv-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+:focus-visible{outline:2px solid #E8362D;outline-offset:2px}
+@media (max-width:860px){
+  .adm-root{display:block!important}
+  .adm-side{position:static!important;height:auto!important;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;align-items:center;padding:12px!important}
+  .adm-side > a{flex-shrink:0;white-space:nowrap}
+  .adm-side > div:last-child{display:none!important}
+  .adm-main{padding:20px 16px 48px!important}
+  .adm-main input[placeholder^="Search"]{width:100%!important}
+  .adm-main > div:first-child > div:last-child{width:100%}
+  .adm-scroll{overflow-x:auto}
+  .adm-split{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
+</helmet>
+
+<div class="adm-root" style="min-height:100vh;display:grid;grid-template-columns:240px minmax(0,1fr)" data-screen-label="Admin">
+
+<!-- SIDEBAR -->
+<aside class="adm-side" style="background:#141414;color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh">
+  <a href="Metavista Store.dc.html" style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:19px;letter-spacing:-.02em;padding:4px 8px 18px">
+    <img src="assets/logo-mark.png" alt="" style="height:26px;width:auto">Metavista <span style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#B9B4AE;margin-left:4px">ADMIN</span>
+  </a>
+  <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="9">
+    <a href="{{ n.href }}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:{{ n.color }};background:{{ n.bg }}">
+      <span>{{ n.label }}</span>
+      <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 8px">{{ n.badge }}</span></sc-if>
+    </a>
+  </sc-for>
+  <div style="margin-top:auto;border-top:1px solid #2C2C2C;padding-top:14px;display:flex;align-items:center;gap:10px">
+    <span style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#F7B21B,#F26A1B,#E8362D);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">AK</span>
+    <span style="font-size:12.5px"><strong style="display:block">Alex K.</strong><span style="color:#B9B4AE;font-size:11.5px">Owner</span></span>
+    <a href="Metavista Store.dc.html#/login" style="margin-left:auto;color:#B9B4AE;font-size:11.5px;font-weight:700">Log out</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="adm-main" style="padding:28px 32px 60px;min-width:0">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px">
+    <div><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;color:#E8362D">{{ pageKicker }}</p><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em">{{ pageTitle }}</h1></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Search orders, customers…" style="border:1px solid #E8E4DF;border-radius:999px;padding:10px 16px;font-size:13px;background:#fff;width:240px">
+      <a href="Metavista Store.dc.html" style="border:1.5px solid #141414;color:#141414;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700">View store ↗</a>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px">
+      <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px"><span style="font-size:12px;color:#8E8E8E;font-weight:600">{{ k.label }}</span><strong style="display:block;font-size:28px;font-weight:800;margin:6px 0 4px;letter-spacing:-.02em">{{ k.value }}</strong><span style="font-size:12px;font-weight:700;color:{{ k.deltaColor }}">{{ k.delta }}</span><span style="font-size:12px;color:#8E8E8E"> vs last 30 days</span></div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:22px">
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:14px"><strong style="font-size:14px">Revenue · last 14 days</strong><span style="font-size:12px;color:#8E8E8E">USD</span></div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
+          <sc-for list="{{ revBars }}" as="b" hint-placeholder-count="14"><div title="{{ b.title }}" style="flex:1;height:{{ b.h }}%;border-radius:6px 6px 2px 2px;background:{{ b.bg }}"></div></sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#8E8E8E;margin-top:8px"><span>Sep 2</span><span>Sep 15</span></div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <strong style="font-size:14px;display:block;margin-bottom:14px">Sales by product</strong>
+        <div style="display:grid;gap:10px">
+          <sc-for list="{{ byProduct }}" as="p" hint-placeholder-count="6">
+            <div><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px"><span style="font-weight:600">{{ p.name }}</span><span style="color:#8E8E8E">{{ p.count }} · ${{ p.rev }}</span></div><div style="height:6px;border-radius:3px;background:#EFEBE6"><div style="height:100%;width:{{ p.pct }}%;border-radius:3px;background:linear-gradient(90deg,#F7B21B,#F26A1B,#E8362D)"></div></div></div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong style="font-size:14px">Needs attention</strong></div>
+        <div style="display:grid;gap:8px">
+          <sc-for list="{{ attention }}" as="a" hint-placeholder-count="4"><a href="{{ a.href }}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:#FBFAF8;border:1px solid #EFEBE6;color:#141414;font-size:13px"><span>{{ a.t }}</span><strong style="color:#E8362D">{{ a.n }}</strong></a></sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <strong style="font-size:14px;display:block;margin-bottom:12px">Recent orders</strong>
+        <div style="display:grid;gap:6px">
+          <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5"><a href="{{ o.href }}" style="display:grid;grid-template-columns:90px 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;color:#141414;font-size:12.5px" style-hover="background:#F7F3EE"><strong>{{ o.id }}</strong><span style="color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.customer }}</span><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span><strong>${{ o.total }}</strong></a></sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ORDERS LIST -->
+  <sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <sc-for list="{{ statusTabs }}" as="t" hint-placeholder-count="7"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }} · {{ t.n }}</button></sc-for>
+    </div>
+    <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
+      <div style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>ORDER</span><span>CUSTOMER</span><span>ITEMS</span><span>STATUS</span><span>TOTAL</span><span>DATE</span></div>
+      <sc-for list="{{ orders }}" as="o" hint-placeholder-count="8">
+        <a href="{{ o.href }}" style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
+          <strong>{{ o.id }}</strong>
+          <span style="min-width:0"><span style="display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.customer }}</span><span style="font-size:11.5px;color:#8E8E8E">{{ o.country }}</span></span>
+          <span style="color:#4A4A4A;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.itemsLabel }}</span>
+          <span><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span></span>
+          <strong>${{ o.total }}</strong>
+          <span style="font-size:12px;color:#8E8E8E">{{ o.date }}</span>
+        </a>
+      </sc-for>
+      <sc-if value="{{ ordersEmpty }}" hint-placeholder-val="{{ false }}"><p style="padding:40px;text-align:center;color:#8E8E8E;margin:0">No orders match.</p></sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ORDER DETAIL -->
+  <sc-if value="{{ isOrder }}" hint-placeholder-val="{{ false }}">
+    <a href="#/orders" style="font-size:12.5px;font-weight:700;color:#8E8E8E">← All orders</a>
+    <div class="adm-split" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;margin-top:14px;align-items:start">
+      <div style="display:grid;gap:14px">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px"><h2 style="margin:0;font-size:20px;font-weight:800">{{ order.id }} <span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ order.sBg }};color:{{ order.sColor }};vertical-align:middle;margin-left:6px">{{ order.status }}</span></h2><span style="font-size:12.5px;color:#8E8E8E">{{ order.date }} · {{ order.payment }}</span></div>
+          <sc-for list="{{ order.items }}" as="it" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #EFEBE6">
+              <div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ it.c1 }} 0 8px,{{ it.c2 }} 8px 16px)"></div>
+              <div style="min-width:0"><strong style="font-size:13.5px;display:block">{{ it.name }}</strong><span style="font-size:12px;color:#8E8E8E">{{ it.spec }} × {{ it.qty }}</span><sc-if value="{{ it.note }}" hint-placeholder-val="{{ false }}"><span style="display:block;font-size:12px;color:#B84A0E;margin-top:4px">Note: {{ it.note }}</span></sc-if></div>
+              <strong style="font-size:13.5px">${{ it.line }}</strong>
+            </div>
+          </sc-for>
+          <div style="border-top:1px solid #EFEBE6;padding-top:12px;display:grid;gap:5px;font-size:13px"><div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${{ order.sub }}</span></div><div style="display:flex;justify-content:space-between;color:#E8362D;font-weight:700"><span>Bundle discount · {{ order.discPct }}%</span><span>−${{ order.disc }}</span></div><div style="display:flex;justify-content:space-between"><span>Shipping · {{ order.shipMethod }}</span><span>${{ order.ship }}</span></div><div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:4px"><span>Total</span><span>${{ order.total }}</span></div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <strong style="font-size:14px;display:block;margin-bottom:12px">S.HD™ preview approval</strong>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><div style="aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,#DDD7D0 0 12px,#E9E3DC 12px 24px)"></div><span style="font-size:11.5px;color:#8E8E8E;display:block;margin-top:6px">Customer upload</span></div>
+            <div><div style="aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,#F7B21B 0 12px,#F26A1B 12px 24px)"></div><span style="font-size:11.5px;color:#8E8E8E;display:block;margin-top:6px">Enhanced proof</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap"><span style="font-size:12.5px;color:#4A4A4A">Proof status: <strong style="color:{{ order.proofColor }}">{{ order.proofLabel }}</strong></span><div style="display:flex;gap:8px"><button onClick="{{ sendProof }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700">Send proof to customer</button><button onClick="{{ approveProof }}" style="border:0;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Mark approved</button></div></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <strong style="font-size:14px;display:block;margin-bottom:12px">Timeline</strong>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ order.timeline }}" as="t" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:flex-start;font-size:12.5px"><span style="width:10px;height:10px;border-radius:50%;background:#E8362D;margin-top:4px;flex-shrink:0"></span><span><strong>{{ t.t }}</strong><span style="color:#8E8E8E"> · {{ t.d }}</span></span></div></sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <strong style="font-size:14px;display:block;margin-bottom:12px">Update status</strong>
+          <select value="{{ order.statusKey }}" onChange="{{ setOrderStatus }}" style="width:100%;border:1px solid #E8E4DF;border-radius:12px;padding:11px 12px;font-size:13px;background:#fff">
+            <sc-for list="{{ statusList }}" as="s" hint-placeholder-count="6"><option value="{{ s.key }}">{{ s.label }}</option></sc-for>
+          </select>
+          <p style="margin:12px 0 6px;font-size:12px;font-weight:700">Tracking number</p>
+          <div style="display:flex;gap:8px"><input value="{{ order.tracking }}" onChange="{{ setTracking }}" placeholder="e.g. 1Z999AA10123456784" style="flex:1;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button onClick="{{ saveTracking }}" style="border:0;border-radius:12px;padding:10px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Save</button></div>
+          <p style="margin:12px 0 6px;font-size:12px;font-weight:700">Internal note</p>
+          <textarea value="{{ order.adminNote }}" onChange="{{ setAdminNote }}" rows="3" placeholder="Visible to staff only" style="width:100%;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px;font-size:13px;line-height:1.6">
+          <strong style="font-size:14px;display:block;margin-bottom:8px">Customer</strong>
+          <a href="{{ order.customerHref }}" style="font-weight:700;color:#141414;border-bottom:2px solid #F26A1B">{{ order.customer }}</a><span style="display:block;color:#4A4A4A">{{ order.email }}</span>
+          <strong style="font-size:12px;display:block;margin:14px 0 4px;letter-spacing:.08em;color:#8E8E8E">SHIP TO</strong><span style="color:#4A4A4A;white-space:pre-line">{{ order.address }}</span>
+        </div>
+        <div style="display:grid;gap:8px"><button onClick="{{ refundOrder }}" style="border:1.5px solid #E8362D;color:#E8362D;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Refund / reprint</button><button onClick="{{ resendEmail }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Resend confirmation email</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- S.HD QUEUE -->
+  <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
+    <p style="margin:0 0 16px;color:#4A4A4A;font-size:13.5px">Every uploaded photo is reviewed before production. Approve the enhanced version, keep the original, or request a better file.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+      <sc-for list="{{ queue }}" as="qi" hint-placeholder-count="4">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12.5px"><a href="{{ qi.href }}" style="font-weight:800;color:#141414">{{ qi.orderId }}</a><span style="color:#8E8E8E">{{ qi.product }} · {{ qi.size }}</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ qi.c1 }} 0 10px,{{ qi.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:8px;font-family:ui-monospace,monospace;font-size:10px;color:#6B6B6B">original</div><div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,#F7B21B 0 10px,#F26A1B 10px 20px);display:flex;align-items:flex-end;padding:8px;font-family:ui-monospace,monospace;font-size:10px;color:#fff">S.HD enhanced</div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#4A4A4A;margin:10px 0"><span>{{ qi.res }} · {{ qi.mb }} MB</span><span style="font-weight:700;color:{{ qi.qColor }}">{{ qi.quality }}</span></div>
+          <sc-if value="{{ qi.pending }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ qi.approve }}" style="border:0;border-radius:999px;padding:10px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Approve enhanced</button><button onClick="{{ qi.keep }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px;font-size:12.5px;font-weight:700">Keep original</button></div>
+            <button onClick="{{ qi.request }}" style="width:100%;margin-top:8px;border:0;background:none;font-size:12px;font-weight:700;color:#E8362D">Request a better file</button>
+          </sc-if>
+          <sc-if value="{{ qi.done }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:10px;border-radius:10px;background:#FFF4E5;color:#B84A0E;font-size:12.5px;font-weight:600;text-align:center">{{ qi.doneLabel }}</p></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- PRODUCTS & PRICING -->
+  <sc-if value="{{ isProducts }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;align-items:start">
+      <div style="display:grid;gap:8px;align-content:start">
+        <sc-for list="{{ productList }}" as="p" hint-placeholder-count="6">
+          <button onClick="{{ p.pick }}" style="text-align:left;display:flex;gap:12px;align-items:center;background:#fff;border:2px solid {{ p.border }};border-radius:14px;padding:12px"><span style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 6px,{{ p.c2 }} 6px 12px)"></span><span style="min-width:0"><strong style="font-size:13px;display:block">{{ p.tag }}</strong><span style="font-size:11.5px;color:#8E8E8E">From ${{ p.from }} · {{ p.visLabel }}</span></span></button>
+        </sc-for>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><h2 style="margin:0;font-size:20px;font-weight:800">{{ curProduct.tag }}</h2><label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700"><input type="checkbox" checked="{{ curProduct.visible }}" onChange="{{ toggleVisible }}" style="accent-color:#E8362D;width:16px;height:16px">Visible in store</label></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label style="font-size:12px;font-weight:700">Title<input value="{{ curProduct.name }}" onChange="{{ setProdName }}" style="display:block;width:100%;margin-top:6px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:500"></label><label style="font-size:12px;font-weight:700">Badge<select value="{{ curProduct.badge }}" onChange="{{ setBadge }}" style="display:block;width:100%;margin-top:6px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;background:#fff"><option value="">None</option><option value="BESTSELLER">BESTSELLER</option><option value="NEW">NEW</option></select></label></div>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
+          <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>CODE</span><span>DIMENSIONS</span><span>METRIC</span><span>PRICE $</span><span>COMPARE $</span><span>STOCK</span></div>
+          <sc-for list="{{ curSizes }}" as="s" hint-placeholder-count="3">
+            <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid #EFEBE6;font-size:13px"><strong>{{ s.code }}</strong><span style="white-space:nowrap">{{ s.dim }}</span><span style="color:#8E8E8E;white-space:nowrap">{{ s.cm }}</span><input value="{{ s.price }}" onChange="{{ s.setPrice }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><input value="{{ s.compare }}" onChange="{{ s.setCompare }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><span style="font-weight:700;color:#1E8E3E">Made to order</span></div>
+          </sc-for>
+        </div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <strong style="font-size:14px;display:block;margin-bottom:12px">Add-ons</strong>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+            <sc-for list="{{ addons }}" as="a" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ a.t }}<div style="display:flex;align-items:center;gap:6px;margin-top:6px"><span style="color:#8E8E8E">+$</span><input value="{{ a.price }}" onChange="{{ a.set }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:7px 10px;font-size:13px;width:80px"></div></label></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end"><button onClick="{{ savePricing }}" style="border:0;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;background:#141414">Save changes</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- WALL OF FAME MODERATION -->
+  <sc-if value="{{ isWall }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ wallTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }} · {{ t.n }}</button></sc-for></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+      <sc-for list="{{ wallItems }}" as="w" hint-placeholder-count="6">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
+          <div style="aspect-ratio:4/3;background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ w.ph }}</div>
+          <div style="padding:14px">
+            <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px"><span><strong style="display:block">{{ w.title }}</strong><span style="color:#8E8E8E">{{ w.author }} · {{ w.city }}</span></span><span style="font-weight:700">♥ {{ w.votes }}</span></div>
+            <p style="margin:8px 0 10px;font-size:11.5px;color:#8E8E8E">Order {{ w.orderId }} · submitted {{ w.date }}</p>
+            <sc-if value="{{ w.isPending }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onClick="{{ w.approve }}" style="border:0;border-radius:999px;padding:9px;font-size:12px;font-weight:700;color:#fff;background:#141414">Approve · pay $20</button><button onClick="{{ w.reject }}" style="border:1.5px solid #E8E4DF;background:none;border-radius:999px;padding:8px;font-size:12px;font-weight:700;color:#8E8E8E">Reject</button></div></sc-if>
+            <sc-if value="{{ w.isApproved }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="font-weight:700;color:#1E8E3E">Live · $20 {{ w.payLabel }}</span><sc-if value="{{ w.unpaid }}" hint-placeholder-val="{{ false }}"><button onClick="{{ w.pay }}" style="border:0;border-radius:999px;padding:7px 12px;font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#F7B21B,#F26A1B,#E8362D)">Send reward</button></sc-if></div></sc-if>
+            <sc-if value="{{ w.isRejected }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="font-weight:700;color:#8E8E8E">Rejected</span><button onClick="{{ w.approve }}" style="border:0;background:none;font-size:11.5px;font-weight:700;color:#E8362D">Restore & approve</button></div></sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- REVIEWS -->
+  <sc-if value="{{ isReviews }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
+      <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6">
+          <div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ r.c1 }} 0 8px,{{ r.c2 }} 8px 16px)"></div>
+          <div style="min-width:0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="color:#F7B21B;font-size:11px;letter-spacing:2px">★★★★★</span><strong style="font-size:13.5px">{{ r.t }}</strong><span style="font-size:11.5px;color:#8E8E8E">{{ r.who }} · {{ r.where }}</span></div><p style="margin:4px 0 0;font-size:12.5px;color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.d }}</p></div>
+          <div style="display:flex;gap:6px;align-items:center"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ r.badgeBg }};color:{{ r.badgeColor }}">{{ r.badge }}</span><button onClick="{{ r.toggle }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">{{ r.action }}</button><button onClick="{{ r.feature }}" style="border:1.5px solid {{ r.featBorder }};background:{{ r.featBg }};color:{{ r.featColor }};border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">★ Featured</button></div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- PROMOTIONS -->
+  <sc-if value="{{ isPromos }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:start">
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <strong style="font-size:14px;display:block;margin-bottom:4px">Automatic bundle discount</strong><p style="margin:0 0 14px;font-size:12.5px;color:#8E8E8E">Applied at checkout by print count. Shown in promo bar.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ t.label }}<div style="display:flex;align-items:center;gap:4px;margin-top:6px"><input value="{{ t.pct }}" onChange="{{ t.set }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:14px;font-weight:800;width:64px"><span style="color:#8E8E8E">%</span></div></label></sc-for>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin-top:14px"><input type="checkbox" checked="{{ promoBarOn }}" onChange="{{ togglePromoBar }}" style="accent-color:#E8362D;width:16px;height:16px">Show promo bar in store</label>
+        <div style="margin-top:14px;background:#141414;color:#fff;border-radius:10px;padding:9px 14px;font-size:11.5px;font-weight:600;letter-spacing:.04em">{{ promoPreview }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <strong style="font-size:14px;display:block;margin-bottom:12px">Discount codes</strong>
+        <form onSubmit="{{ addCode }}" style="display:grid;grid-template-columns:1.3fr .8fr auto;gap:8px;margin-bottom:14px"><input value="{{ newCode }}" onChange="{{ setNewCode }}" placeholder="CODE" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;text-transform:uppercase"><input value="{{ newPct }}" onChange="{{ setNewPct }}" placeholder="% off" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button type="submit" style="border:0;border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Add</button></form>
+        <div style="display:grid;gap:8px">
+          <sc-for list="{{ codes }}" as="c" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #EFEBE6;border-radius:12px;font-size:13px"><span><code style="font-weight:800;letter-spacing:.08em">{{ c.code }}</code><span style="display:block;font-size:11.5px;color:#8E8E8E">{{ c.uses }} uses · {{ c.source }}</span></span><strong>{{ c.pct }}%</strong><button onClick="{{ c.toggle }}" style="border:1.5px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700">{{ c.state }}</button><button onClick="{{ c.remove }}" style="border:0;background:none;color:#8E8E8E;font-size:16px">×</button></div></sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- CUSTOMERS -->
+  <sc-if value="{{ isCustomers }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
+      <div style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>CUSTOMER</span><span>LOCATION</span><span>ORDERS</span><span>SPENT</span><span>LAST ORDER</span><span>TAGS</span></div>
+      <sc-for list="{{ customers }}" as="c" hint-placeholder-count="8">
+        <a href="{{ c.href }}" style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
+          <span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">{{ c.initials }}</span><span style="min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</strong><span style="font-size:11.5px;color:#8E8E8E">{{ c.email }}</span></span></span>
+          <span style="color:#4A4A4A">{{ c.country }}</span><span>{{ c.orders }}</span><strong>${{ c.spent }}</strong><span style="font-size:12px;color:#8E8E8E">{{ c.last }}</span>
+          <span><sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:#FFF4E5;color:#B84A0E">{{ c.tag }}</span></sc-if></span>
+        </a>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <!-- CUSTOMER DETAIL -->
+  <sc-if value="{{ isCustomer }}" hint-placeholder-val="{{ false }}">
+    <a href="#/customers" style="font-size:12.5px;font-weight:700;color:#8E8E8E">← All customers</a>
+    <div class="adm-split" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:18px;margin-top:14px;align-items:start">
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <h2 style="margin:0 0 14px;font-size:20px;font-weight:800">{{ customer.name }}</h2>
+        <strong style="font-size:12px;letter-spacing:.08em;color:#8E8E8E">ORDERS</strong>
+        <div style="display:grid;gap:6px;margin-top:8px">
+          <sc-for list="{{ customerOrders }}" as="o" hint-placeholder-count="2"><a href="{{ o.href }}" style="display:grid;grid-template-columns:90px 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;color:#141414;font-size:12.5px;border:1px solid #EFEBE6"><strong>{{ o.id }}</strong><span style="color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.itemsLabel }}</span><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span><strong>${{ o.total }}</strong></a></sc-for>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px;font-size:13px;line-height:1.7;color:#4A4A4A">
+        <strong style="color:#141414">{{ customer.email }}</strong><br>{{ customer.country }}<br>Orders: {{ customer.orders }} · Spent: ${{ customer.spent }}<br>Newsletter: {{ customer.news }}<br>Wall of Fame rewards: {{ customer.rewards }}
+        <div style="margin-top:14px"><button onClick="{{ resendEmail }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:10px 16px;font-size:12.5px;font-weight:700">Email customer</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- CONTENT -->
+  <sc-if value="{{ isContent }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ contentTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }}</button></sc-for></div>
+    <sc-if value="{{ contentFaq }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;gap:10px">
+        <sc-for list="{{ faqRows }}" as="f" hint-placeholder-count="8">
+          <div style="background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:14px 18px">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><input value="{{ f.q }}" onChange="{{ f.setQ }}" style="flex:1;border:0;font-size:14px;font-weight:700;background:none;padding:4px 0"><button onClick="{{ f.toggle }}" style="border:0;background:none;color:#8E8E8E;font-size:12.5px;font-weight:700">{{ f.toggleLabel }}</button><button onClick="{{ f.remove }}" style="border:0;background:none;color:#8E8E8E;font-size:16px">×</button></div>
+            <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><textarea value="{{ f.a }}" onChange="{{ f.setA }}" rows="3" style="width:100%;margin-top:8px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea></sc-if>
+          </div>
+        </sc-for>
+        <button onClick="{{ addFaq }}" style="border:1.5px dashed #C9C2BA;background:none;border-radius:16px;padding:14px;font-size:13px;font-weight:700;color:#4A4A4A">+ Add question</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ contentBlog }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid;gap:10px">
+        <sc-for list="{{ postRows }}" as="p" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:64px minmax(0,1fr) auto auto;gap:14px;align-items:center;background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:12px 16px"><div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 8px,{{ p.c2 }} 8px 16px)"></div><div style="min-width:0"><strong style="font-size:13.5px;display:block">{{ p.t }}</strong><span style="font-size:12px;color:#8E8E8E">{{ p.date }} · {{ p.d }}</span></div><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ p.bg }};color:{{ p.color }}">{{ p.state }}</span><button onClick="{{ p.toggle }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">{{ p.action }}</button></div></sc-for>
+        <button onClick="{{ addPost }}" style="border:1.5px dashed #C9C2BA;background:none;border-radius:16px;padding:14px;font-size:13px;font-weight:700;color:#4A4A4A">+ New draft</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ contentPolicies }}" hint-placeholder-val="{{ false }}">
+      <div class="adm-split" style="display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:start">
+        <div style="display:grid;gap:6px"><sc-for list="{{ policyTabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.pick }}" style="text-align:left;background:#fff;border:2px solid {{ t.border }};border-radius:12px;padding:12px;font-size:13px;font-weight:700">{{ t.label }}<span style="display:block;font-size:11px;color:#8E8E8E;font-weight:500">Updated {{ t.updated }}</span></button></sc-for></div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+          <sc-for list="{{ policySections }}" as="s" hint-placeholder-count="4"><input value="{{ s.h }}" onChange="{{ s.setH }}" style="display:block;width:100%;border:0;font-size:15px;font-weight:800;background:none;padding:6px 0;margin-top:8px"><textarea value="{{ s.p }}" onChange="{{ s.setP }}" rows="3" style="width:100%;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea></sc-for>
+          <div style="display:flex;justify-content:flex-end;margin-top:14px"><button onClick="{{ savePolicy }}" style="border:0;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;background:#141414">Publish</button></div>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+  <!-- SITE SECTIONS -->
+  <sc-if value="{{ isSections }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <p style="margin:0;font-size:13px;color:#4A4A4A;max-width:620px;line-height:1.55">Turn store blocks on and off. Hidden blocks stay in the code — switch them back on anytime. Changes apply to the store instantly (open in the same browser).</p>
+      <div style="display:flex;gap:8px"><button onClick="{{ featuresReset }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:700">Reset to defaults</button><button onClick="{{ featuresAllOn }}" style="border:0;border-radius:999px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Show everything</button></div>
+    </div>
+    <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px 18px;margin-bottom:14px">
+      <label for="shd-endpoint" style="display:block;font-size:14px;font-weight:800;margin-bottom:4px">S.HD™ enhancement server</label>
+      <p style="margin:0 0 10px;font-size:12.5px;color:#4A4A4A;line-height:1.5">Leave empty to enhance photos in the customer's browser (upscale + sharpen). Paste an endpoint URL to use an AI model on your server: it receives <code>POST multipart "file"</code> and returns the image, or JSON <code>{ "url": … }</code>. If the server fails, the browser version is used automatically.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="shd-endpoint" value="{{ shdEndpoint }}" onChange="{{ setShdEndpoint }}" placeholder="https://your-server.example/enhance" style="flex:1 1 260px;min-width:0;border:1px solid #E8E4DF;border-radius:12px;padding:11px 14px;font-size:13px"><button onClick="{{ saveShdEndpoint }}" style="border:0;border-radius:999px;padding:11px 18px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Save</button></div>
+      <p style="margin:8px 0 0;font-size:12px;color:#6B6B6B">Now: <strong style="color:#141414">{{ shdModeLabel }}</strong></p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start">
+      <sc-for list="{{ featureGroups }}" as="g" hint-placeholder-count="6">
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><strong style="font-size:14px">{{ g.name }}</strong><span style="font-size:11.5px;color:#8E8E8E;font-weight:600">{{ g.count }}</span></div>
+          <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="5">
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #F1EEEA;font-size:13px;cursor:pointer">
+              <span style="color:{{ f.color }};font-weight:600">{{ f.label }}</span>
+              <input type="checkbox" checked="{{ f.on }}" onChange="{{ f.toggle }}" style="accent-color:#E8362D;width:17px;height:17px;flex-shrink:0">
+            </label>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</main>
+</div>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#141414;color:#fff;border-radius:999px;padding:12px 20px;font-size:13px;font-weight:700;z-index:80;box-shadow:0 12px 30px rgba(20,20,20,.3);animation:mv-in .2s ease">{{ toast }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const FEATURES = [
+  ['Global','promoBar','Promo bar (top marquee)',false],
+  ['Global','newsletterPopup','Newsletter popup (15% off)',false],
+  ['Global','headerSearch','Header search',true],
+  ['Global','headerLogin','Header "Log in" link',true],
+  ['Menu','nav_collab','Collaboration (artists) menu + collection pages',false],
+  ['Menu','nav_wall','Wall of Fame page',false],
+  ['Menu','nav_about','About Us',true],
+  ['Menu','nav_mount','Magnetic Mount',true],
+  ['Menu','nav_track','Track Your Order',true],
+  ['Products','prod_classic','Classic Metal Prints',true],
+  ['Products','prod_starmap','StarMap Metal Prints',false],
+  ['Products','prod_streetmap','StreetMap Metal Prints',false],
+  ['Products','prod_tabletop','Tabletop Metal Prints',false],
+  ['Products','prod_hexagon','Hexagon Metal Prints',false],
+  ['Products','prod_idol','Idol Metal Prints',true],
+  ['Home page','home_hero','Hero (first screen)',true],
+  ['Home page','home_whatWhy','What / Why tabs',true],
+  ['Home page','home_gallery','Gallery-grade art (dark block)',false],
+  ['Home page','home_products','"Which metal print…" product grid',false],
+  ['Home page','home_metalVsFramed','Metal vs. framed prints',true],
+  ['Home page','home_shd','S.HD before / after',true],
+  ['Home page','home_steps','Simple 3-step process',true],
+  ['Home page','home_stories','Customer stories & showcase',true],
+  ['Home page','home_partners','Partners & artists',false],
+  ['Footer','foot_faq','FAQs',true],
+  ['Footer','foot_blog','Blogs',false],
+  ['Footer','foot_sizes','Size Guide',true],
+  ['Footer','foot_howto','How To Mount',true],
+  ['Footer','foot_finishes','Compare Finishes',false],
+  ['Footer','foot_policy','Policy column',true],
+  ['Footer','foot_contact','Get in touch column',true],
+  ['Footer','foot_social','Follow us column',true],
+  ['Footer','foot_newsletter','Newsletter button',false],
+  ['Photo tools','photo_autoRatio','Auto-pick best ratio on upload',true],
+  ['Photo tools','photo_rotate','Rotate button',true],
+  ['Photo tools','photo_smartFocus','Smart Focus (auto-centre on subject)',true],
+  ['Photo tools','photo_originalRatio','Original ratio (no crop) + hint',true],
+  ['Photo tools','photo_qualityCheck','Photo quality check (sharpness + DPI)',true],
+  ['Photo tools','photo_qualityDemo','"Worried about image quality?" demo',true],
+  ['Photo tools','photo_collage','Collage Builder option (not built yet)',false],
+  ['S.HD & preview','shd_enhance','S.HD™ enhancement + before/after step',true],
+  ['S.HD & preview','shd_watermark','Watermark on previews',true],
+  ['S.HD & preview','shd_consent','Consent notice before using S.HD',true],
+  ['S.HD & preview','preview_3d','3D preview (drag to rotate)',true],
+  ['S.HD & preview','preview_back','Mount view from the back',true],
+  ['S.HD & preview','preview_rooms','Room previews to scale',true],
+].map(f => ({ group:f[0], key:f[1], label:f[2], def:f[3] }));
+const FEATURE_DEFAULTS = Object.fromEntries(FEATURES.map(f => [f.key, f.def]));
+const loadFeatures = () => { let saved = {}; try { saved = JSON.parse(localStorage.getItem('mv_features') || '{}'); } catch (e) {} return { ...FEATURE_DEFAULTS, ...saved }; };
+
+const money = n => (Math.round(n * 100) / 100).toFixed(2);
+const PH = [['#EDE7E0','#F5F0EA'],['#E6E4E1','#F0EEEB'],['#F3E3D6','#F9EEE5'],['#E2E0DD','#EDEBE8'],['#F0E6DA','#F7F0E8'],['#E8E2DC','#F2EDE8']];
+const ph = i => PH[i % PH.length];
+const STATUS = { pending:['Pending proof','#FFF4E5','#B84A0E'], review:['S.HD review','#FFF4E5','#B84A0E'], production:['In production','#EEF2FF','#3B4CCA'], shipped:['Shipped','#E8F5EC','#1E8E3E'], delivered:['Delivered','#EFEBE6','#4A4A4A'], refunded:['Refunded','#FDECEC','#C0262D'] };
+const PRODUCTS = [
+  { id:'classic', tag:'Classic Metal Prints', name:'Custom HD Metal Print', from:39.99, badge:'BESTSELLER', sizes:[['M','11″ × 14″','28 × 37 cm',39.99,44.99],['L','14″ × 18″','35 × 47 cm',66.99,74.99],['XL','21″ × 28″','54 × 71 cm',144.99,159.99]] },
+  { id:'starmap', tag:'StarMap Metal Prints', name:'Custom StarMap Metal Print', from:39.99, badge:'BESTSELLER', sizes:[['M','11″ × 14″','28 × 37 cm',39.99,44.99],['L','14″ × 18″','35 × 47 cm',66.99,74.99],['XL','21″ × 28″','54 × 71 cm',144.99,159.99]] },
+  { id:'streetmap', tag:'StreetMap Metal Prints', name:'Custom StreetMap Metal Print', from:39.99, badge:'', sizes:[['M','11″ × 14″','28 × 37 cm',39.99,44.99],['L','14″ × 18″','35 × 47 cm',66.99,74.99],['XL','21″ × 28″','54 × 71 cm',144.99,159.99]] },
+  { id:'tabletop', tag:'Tabletop Metal Prints', name:'Custom Tabletop Metal Prints', from:35.99, badge:'', sizes:[['S','5″ × 7″','13 × 18 cm',35.99,39.99],['M','8″ × 10″','20 × 25 cm',49.99,54.99]] },
+  { id:'hexagon', tag:'Hexagon Metal Prints', name:'Custom Hexagon Metal Prints', from:24.99, badge:'', sizes:[['Standard','10.2″ × 8.9″','26 × 22.5 cm',24.99,29.99]] },
+  { id:'idol', tag:'Idol Metal Prints', name:"Turn That Photo Into Art", from:49.99, badge:'NEW', sizes:[['S','Long side 14″','36 cm',49.99,59.99],['M','Long side 20″','51 cm',79.99,89.99],['L','Long side 30″','76 cm',129.99,149.99]] },
+].map((p, i) => ({ ...p, visible:true, c1: ph(i)[0], c2: ph(i)[1], sizes: p.sizes.map(s => ({ code:s[0], dim:s[1], cm:s[2], price:money(s[3]), compare:money(s[4]) })) }));
+const CUSTOMERS = [
+  ['Salvatore D.','salvatore.d@example.com','Italy','VIP'],['Daniel Ferreira','daniel.f@example.com','Portugal',''],['The Parker Family','parkers@example.com','San Diego, US',''],['Ben E.','ben.e@example.com','London, UK','Repeat'],
+  ['J. Miller','j.miller@example.com','Munich, DE',''],['Chloe Martin','chloe.m@example.com','Paris, FR',''],['David L.','david.l@example.com','Chicago, US',''],['Emily R.','emily.r@example.com','Manchester, UK','Repeat'],
+  ['Sophie Braun','sophie.b@example.com','Berlin, DE',''],['Lucas D.','lucas.d@example.com','Lyon, FR',''],['Jessica T.','jessica.t@example.com','Austin, US','VIP'],['Hans G.','hans.g@example.com','Hamburg, DE',''],
+].map((c, i) => ({ id:i, name:c[0], email:c[1], country:c[2], tag:c[3], initials:c[0].split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(), news: i % 3 ? 'Subscribed' : 'Not subscribed', rewards: i % 4 === 0 ? '$20 paid' : '—' }));
+const mkOrder = (n, cust, items, status, daysAgo, ship, extra) => { const sub = items.reduce((a, it) => a + it.price * it.qty, 0); const cnt = items.reduce((a, it) => a + it.qty, 0); const pct = cnt >= 3 ? 35 : cnt === 2 ? 25 : 10; const shipCost = ship === 'Expedited' ? 24.9 : 9.9;
+  return { id:'MV-' + n, custId:cust, items, statusKey:status, daysAgo, shipMethod:ship, ship:shipCost, sub, discPct:pct, disc:sub * pct / 100, total: sub - sub * pct / 100 + shipCost, tracking: extra?.tracking || '', adminNote:'', proof: extra?.proof || (status === 'pending' ? 'sent' : 'approved'), payment: extra?.payment || 'VISA •••• 4242' }; };
+const it = (name, spec, price, qty, note) => ({ name, spec, price, qty, note: note || '' });
+const ORDERS = [
+  mkOrder(48213, 0, [it('Custom HD Metal Print','L · 3:4 · Gloss · Magnet',86.99,1), it('Custom HD Metal Print','M · 1:1 · Gloss · Standard',39.99,1)], 'pending', 0, 'Standard'),
+  mkOrder(48212, 10, [it('Turn That Photo Into Art','M · Long side 20″',79.99,1,'Only print the character in the center')], 'review', 0, 'Expedited', { proof:'pending', payment:'PayPal' }),
+  mkOrder(48211, 3, [it('Custom Hexagon Metal Prints','7 hexagons · pointy top',174.93,1)], 'production', 1, 'Standard'),
+  mkOrder(48210, 7, [it('Custom StarMap Metal Print','XL · 2:3 · Brushed · Floating 3D',154.99,1)], 'production', 1, 'Standard', { payment:'Apple Pay' }),
+  mkOrder(48209, 1, [it('Custom Tabletop Metal Prints','M · 8″ × 10″',49.99,2)], 'shipped', 2, 'Standard', { tracking:'1Z999AA10123456784' }),
+  mkOrder(48208, 4, [it('Custom StreetMap Metal Print','L · 3:4 · Gloss · Magnet',86.99,1), it('Safe-Wall Magnetic Mounting System','Kit',19.99,1)], 'shipped', 3, 'Expedited', { tracking:'LY123456789CN' }),
+  mkOrder(48207, 2, [it('Custom HD Metal Print','XL · 3:4 · Gloss · Magnet',164.99,1), it('Custom HD Metal Print','M · 3:4 · Gloss · Magnet',59.99,2)], 'delivered', 6, 'Standard', { tracking:'1Z999AA10123456701' }),
+  mkOrder(48206, 5, [it('Stellaris — No. 02','12″ × 18″ · Gloss · Magnet',49.99,1)], 'delivered', 8, 'Standard'),
+  mkOrder(48205, 8, [it('Custom HD Metal Print','M · 2:3 · Brushed · Standard',39.99,1)], 'refunded', 9, 'Standard', { payment:'Mastercard •••• 8812' }),
+  mkOrder(48204, 6, [it('Custom Hexagon Metal Prints','9 hexagons · flat top',224.91,1)], 'delivered', 12, 'Standard'),
+  mkOrder(48203, 9, [it('Antonio Bagia — No. 01','12″ × 18″ · Gloss · Magnet',39.99,1), it('Antonio Bagia — No. 03','12″ × 18″ · Gloss · Magnet',59.99,1)], 'delivered', 14, 'Standard'),
+  mkOrder(48202, 11, [it('Custom StarMap Metal Print','M · 3:4 · Gloss · Magnet',59.99,1)], 'delivered', 17, 'Standard'),
+];
+const QUEUE = [
+  { orderId:'MV-48212', product:'Idol Print', size:'M', res:'1280 × 720', mb:'0.4', quality:'Low res — S.HD required', qColor:'#C0262D' },
+  { orderId:'MV-48213', product:'Classic', size:'L', res:'4032 × 3024', mb:'3.8', quality:'Good', qColor:'#1E8E3E' },
+  { orderId:'MV-48213', product:'Classic', size:'M', res:'3000 × 3000', mb:'2.1', quality:'Good', qColor:'#1E8E3E' },
+  { orderId:'MV-48211', product:'Hexagon', size:'×7', res:'2400 × 1800', mb:'1.6', quality:'Slight blur on faces', qColor:'#B84A0E' },
+].map((q, i) => ({ ...q, id:i, c1: ph(i + 1)[0], c2: ph(i + 1)[1], state:'pending' }));
+const WALL = [
+  ['Sunset Over Lisbon','Marta','Lisbon',142,'approved','MV-47990','Sep 1',true],['Gaming Corner','Kenji','Osaka',98,'approved','MV-48011','Sep 3',true],['Family Wall','The Okafors','Houston',211,'approved','MV-47812','Aug 22',false],
+  ['Nebula Triptych','Ana','Madrid',0,'pending','MV-48190','Sep 14',false],['Our Dog Biscuit','Tom','Leeds',0,'pending','MV-48170','Sep 14',false],['Hex Honeycomb','Priya','Toronto',0,'pending','MV-48204','Sep 15',false],
+  ['Blurry Hallway','Anon','—',0,'rejected','MV-48100','Sep 9',false],['Wedding Day','Léa & Marc','Lyon',188,'approved','MV-47700','Aug 15',true],
+].map((w, i) => ({ id:i, title:w[0], author:w[1], city:w[2], votes:w[3], state:w[4], orderId:w[5], date:w[6], paid:w[7], c1: ph(i + 1)[0], c2: ph(i + 1)[1], ph:'customer photo: ' + w[0].toLowerCase() }));
+const REVIEWS = [['Perfect Fit','Multiple orders already. They cut pieces to my requested dimensions — perfect fit on my wall.','Salvatore D.','Italy'],['Awesome quality!','Really loved the design. They showed a preview before sending!','Daniel','Portugal'],['So Vibrant!','Colors are amazing. My son loves this family portrait.','The Parker Family','San Diego'],['Studio Essential','Super sharp text. Perfect fit for my studio setup.','Ben E.','London'],['Champion Moment','Captured the action perfectly. Looks epic next to his trophies!','J. Miller','Munich'],['Stunning Centerpiece','Breathtaking quality. Transformed our living room.','Chloe & Dan','Paris'],['Incredible Detail','Unbelievable clarity. Best souvenir from our trip.','David L.','Chicago'],['Best Friend Gift','Unreal clarity! My best friend cried tears of joy.','Emily R.','Manchester'],['High-End Art','Looks like high-end art. Fits my room vibe perfectly.','Sophie','Berlin'],['Pending review','Arrived fast, colors slightly warmer than screen but gorgeous.','Marco P.','Rome']].map((r, i) => ({ id:i, t:r[0], d:r[1], who:r[2], where:r[3], c1: ph(i)[0], c2: ph(i)[1], published: i < 9, featured: i < 4 }));
+const FAQS = [['How long does production take?','Typically 2–3 business days. Production time may be extended during peak holiday seasons.'],['How long does shipping take?','Standard: 10–14 business days. Expedited: 5–9 business days.'],['Which countries do you ship to?','We ship to 49 countries and regions.'],['How are shipping fees calculated?','Based on weight, packaging, destination and carrier costs; shown at checkout.'],['How can I track my package?','Use Track Your Order with your Order ID and email/phone.'],['Is my photo resolution high enough?','We offer free HD enhancement on every order and review every file.'],['HD metal vs. traditional canvas?','Scratch-resistant, waterproof, fade-resistant, more vibrant, sharper.'],['How do I hang without damaging my wall?','Magnetic mounting — no drilling, swap in seconds.']].map((f, i) => ({ id:i, q:f[0], a:f[1] }));
+const POSTS = [['Aug 28, 2026','How to build a gallery wall with hexagons','Layouts, spacing and mounting tips.',true],['Aug 14, 2026','Gloss vs. brushed: choosing a finish','When white reproduction matters.',true],['Jul 30, 2026','Phone photos on metal: what actually matters','Lighting, focus, resolution.',true],['Draft','Star maps as anniversary gifts','Picking the date and place.',false]].map((p, i) => ({ id:i, date:p[0], t:p[1], d:p[2], published:p[3], c1: ph(i + 3)[0], c2: ph(i + 3)[1] }));
+const POLICIES = { privacy:{ label:'Privacy Policy', updated:'Aug 2', sections:[['What we collect','Contact details, order information and the images you upload for printing.'],['How we use it','To produce and ship your order, provide support and, with consent, send offers.'],['Image deletion','Uploaded photos are automatically deleted after printing is complete.'],['Your rights','Request access, correction or deletion at support@metavista.com.']] }, refund:{ label:'Refund Policy', updated:'Jul 19', sections:[['Custom products','Because every print is made to order, we cannot accept returns for change of mind.'],['Damaged or defective','Contact us within 14 days with photos; we reprint or refund at no cost.'],['Wrong image uploaded','Contact us before production starts to swap the file.'],['Processing','Refunds return to the original payment method within 5–10 business days.']] }, shipping:{ label:'Shipping Policy', updated:'Jun 30', sections:[['Production','2–3 business days before dispatch.'],['Transit times','Standard 10–14 business days; Expedited 5–9 business days.'],['Coverage','49 countries and regions. Remote-area surcharges may apply.'],['Tracking','A tracking number is emailed on dispatch.']] }, terms:{ label:'Terms of Service', updated:'May 12', sections:[['Your content','You confirm you hold the rights to any image you upload.'],['Proofs','For screenshot-based orders we email a preview for approval before production.'],['Pricing','Bundle discounts apply automatically; codes cannot be combined.'],['Liability','Our liability is limited to the value of the order.']] } };
+const fmtDate = d => { const dt = new Date(2026, 8, 15 - d); return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' }); };
+
+class Component extends DCLogic {
+  constructor(p) { super(p);
+    this.state = { route:this.parseHash(), q:'', toast:'', statusFilter:'all', orders:ORDERS, queue:QUEUE, products:PRODUCTS, curProd:'classic', addons:[['Floating 3D Mount','10.00'],['Wall-Safe Magnet','20.00'],['Magnetic Mount Kit (standalone)','19.99']].map(a => ({ t:a[0], price:a[1] })),
+      wall:WALL, wallTab:'pending', reviews:REVIEWS, tiers:['10','25','35'], promoBarOn:true, codes:[{ code:'WELCOME15', pct:15, uses:412, source:'Newsletter popup', active:true },{ code:'WALLFAME20', pct:20, uses:37, source:'Wall of Fame reward', active:true },{ code:'STELLARIS10', pct:10, uses:128, source:'Partner', active:false }], newCode:'', newPct:'',
+      features: loadFeatures(), settings: (() => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } })(), shdDraft: null, contentTab:'faq', faqs:FAQS, faqOpen:-1, posts:POSTS, policyKey:'privacy', policies:POLICIES }; }
+  parseHash() { const h = (location.hash || '#/').replace(/^#\/?/, ''); const [page, param] = h.split('/'); return { page: page || 'dash', param: param || '' }; }
+  componentDidMount() { this._onHash = () => { this.setState({ route:this.parseHash() }); window.scrollTo(0, 0); }; window.addEventListener('hashchange', this._onHash); }
+  componentWillUnmount() { window.removeEventListener('hashchange', this._onHash); clearTimeout(this._t); }
+  setFeatures(features) { try { localStorage.setItem('mv_features', JSON.stringify(features)); } catch (e) {} this.setState({ features }); }
+  toast(t) { this.setState({ toast:t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast:'' }), 2200); }
+  updOrder(id, patch) { this.setState(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, ...patch } : o) })); }
+  updProd(id, patch) { this.setState(s => ({ products: s.products.map(p => p.id === id ? { ...p, ...patch } : p) })); }
+  decorate(o) { const [label, sBg, sColor] = STATUS[o.statusKey]; const c = CUSTOMERS[o.custId]; return { ...o, status:label, sBg, sColor, customer:c.name, email:c.email, country:c.country, customerHref:'#/customer/' + c.id, href:'#/order/' + o.id, date:fmtDate(o.daysAgo), total:money(o.total), sub:money(o.sub), disc:money(o.disc), ship:money(o.ship), itemsLabel:o.items.map(i => (i.qty > 1 ? i.qty + '× ' : '') + i.name).join(', ') }; }
+
+  renderVals() {
+    const S = this.state, { route } = S, go = patch => () => this.setState(patch), border = on => on ? '#E8362D' : '#E8E4DF';
+    const pill = on => ({ border: on ? '#E8362D' : '#E8E4DF', bg: on ? '#E8362D' : '#fff', color: on ? '#fff' : '#141414' });
+    const q = S.q.trim().toLowerCase();
+    const all = S.orders.map(o => this.decorate(o));
+    const pendingProof = S.orders.filter(o => o.statusKey === 'pending' || o.statusKey === 'review').length;
+    const queuePending = S.queue.filter(x => x.state === 'pending').length;
+    const wallPending = S.wall.filter(w => w.state === 'pending').length;
+    const pagesAll = [['dash','Dashboard',0],['orders','Orders',pendingProof],['queue','S.HD queue',queuePending],['products','Products & pricing',0],['wall','Wall of Fame',wallPending],['reviews','Reviews',S.reviews.filter(r => !r.published).length],['promos','Promotions',0],['customers','Customers',0],['content','Content',0],['sections','Site sections',0]];
+    const pages = pagesAll.filter(pg => !(pg[0] === 'wall' && !S.features.nav_wall) && !(pg[0] === 'queue' && !S.features.shd_enhance));
+    const pageKey = route.page === 'order' ? 'orders' : route.page === 'customer' ? 'customers' : route.page;
+    const cur = pagesAll.find(p => p[0] === pageKey) || pagesAll[0];
+    const active = S.orders.filter(o => o.statusKey !== 'refunded');
+    const revenue = active.reduce((a, o) => a + o.total, 0);
+    const seed = [420,610,380,720,910,560,640,1120,830,690,980,1240,760,1010];
+    const order = all.find(o => o.id === route.param) || all[0];
+    const cust = CUSTOMERS.find(c => String(c.id) === route.param) || CUSTOMERS[0];
+    const custOrders = id => all.filter(o => o.custId === id);
+    const filtered = all.filter(o => (S.statusFilter === 'all' || o.statusKey === S.statusFilter) && (!q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q) || o.itemsLabel.toLowerCase().includes(q)));
+    const curProduct = S.products.find(p => p.id === S.curProd) || S.products[0];
+    const byProd = S.products.map(p => { const os = active.flatMap(o => o.items.filter(i => i.name.toLowerCase().includes(p.tag.split(' ')[0].toLowerCase()))); return { name:p.tag, count:os.reduce((a, i) => a + i.qty, 0), rev:os.reduce((a, i) => a + i.price * i.qty, 0) }; });
+    const maxRev = Math.max(...byProd.map(b => b.rev), 1);
+    const wallItems = S.wall.filter(w => w.state === S.wallTab);
+    const pol = S.policies[S.policyKey];
+    const upd = (key, id, patch) => this.setState(s => ({ [key]: s[key].map(x => x.id === id ? { ...x, ...patch } : x) }));
+    return {
+      featureGroups: [...new Set(FEATURES.map(f => f.group))].map(g => { const items = FEATURES.filter(f => f.group === g); return { name:g, count: items.filter(f => S.features[f.key]).length + ' / ' + items.length + ' on', items: items.map(f => ({ label:f.label, on: !!S.features[f.key], color: S.features[f.key] ? '#141414' : '#8E8E8E', toggle: e => this.setFeatures({ ...S.features, [f.key]: e.target.checked }) })) }; }),
+      shdEndpoint: S.shdDraft ?? S.settings.shdEndpoint, setShdEndpoint: e => this.setState({ shdDraft: e.target.value }),
+      saveShdEndpoint: () => { const v = String(S.shdDraft ?? S.settings.shdEndpoint).trim(); if (v && !/^https?:\/\//i.test(v)) { this.toast('Enter a full URL starting with https://'); return; } const settings = { ...S.settings, shdEndpoint: v }; try { localStorage.setItem('mv_settings', JSON.stringify(settings)); } catch (e) {} this.setState({ settings, shdDraft:null }); this.toast(v ? 'S.HD server saved' : 'Using in-browser enhancement'); },
+      shdModeLabel: S.settings.shdEndpoint ? 'server · ' + S.settings.shdEndpoint : 'in-browser enhancement',
+      featuresReset: () => { this.setFeatures({ ...FEATURE_DEFAULTS }); this.toast('Defaults restored'); }, featuresAllOn: () => { this.setFeatures(Object.fromEntries(FEATURES.map(f => [f.key, true]))); this.toast('All sections visible'); },
+      navItems: pages.map(p => ({ label:p[1], href:'#/' + p[0], badge: p[2] || 0, color: p[0] === pageKey ? '#fff' : '#B9B4AE', bg: p[0] === pageKey ? 'rgba(255,255,255,.1)' : 'transparent' })),
+      pageKicker: 'METAVISTA ADMIN', pageTitle: route.page === 'order' ? 'Order ' + order.id : route.page === 'customer' ? cust.name : cur[1],
+      q:S.q, setQ: e => this.setState({ q:e.target.value }), toast:S.toast,
+      isDash: pageKey === 'dash', isOrders: route.page === 'orders', isOrder: route.page === 'order', isQueue: route.page === 'queue', isProducts: route.page === 'products', isWall: route.page === 'wall', isReviews: route.page === 'reviews', isPromos: route.page === 'promos', isCustomers: route.page === 'customers', isCustomer: route.page === 'customer', isContent: route.page === 'content', isSections: route.page === 'sections',
+      // dashboard
+      kpis: [{ label:'Revenue · 30 days', value:'$' + money(revenue * 3.4).replace(/\.\d+$/, ''), delta:'+18.2%', deltaColor:'#1E8E3E' },{ label:'Orders', value: String(active.length * 4), delta:'+11.5%', deltaColor:'#1E8E3E' },{ label:'Avg. order value', value:'$' + money(revenue / active.length), delta:'+4.1%', deltaColor:'#1E8E3E' },{ label:'Conversion rate', value:'2.8%', delta:'−0.3 pt', deltaColor:'#C0262D' }],
+      revBars: seed.map((v, i) => ({ h: Math.round(v / 1240 * 100), bg: i === 13 ? 'linear-gradient(180deg,#F7B21B,#E8362D)' : '#E8E4DF', title:'$' + v })),
+      byProduct: byProd.map(b => ({ ...b, rev: money(b.rev), pct: Math.round(b.rev / maxRev * 100) })),
+      attention: [{ t:'Orders awaiting proof approval', n:pendingProof, href:'#/orders' },{ t:'Photos in S.HD review queue', n:queuePending, href:'#/queue' },{ t:'Wall of Fame submissions to moderate', n:wallPending, href:'#/wall' },{ t:'Reviews pending publication', n:S.reviews.filter(r => !r.published).length, href:'#/reviews' }],
+      recentOrders: all.slice(0, 5),
+      // orders
+      statusTabs: [['all','All'], ...Object.keys(STATUS).map(k => [k, STATUS[k][0]])].map(t => ({ label:t[1], n: t[0] === 'all' ? all.length : all.filter(o => o.statusKey === t[0]).length, ...pill(S.statusFilter === t[0]), pick: () => this.setState({ statusFilter:t[0] }) })),
+      orders: filtered, ordersEmpty: filtered.length === 0,
+      order: { ...order, items: order.items.map((i, k) => ({ ...i, line: money(i.price * i.qty), c1: ph(k)[0], c2: ph(k)[1] })), proofLabel: order.proof === 'approved' ? 'Approved by customer' : order.proof === 'sent' ? 'Sent — awaiting reply' : 'Not sent', proofColor: order.proof === 'approved' ? '#1E8E3E' : '#B84A0E',
+        timeline: [['Order placed', fmtDate(order.daysAgo) + ' · ' + order.payment],['Photo received', fmtDate(order.daysAgo)], ...(order.proof !== 'pending' ? [['Proof sent to customer', fmtDate(order.daysAgo)]] : []), ...(order.proof === 'approved' ? [['Proof approved', fmtDate(Math.max(0, order.daysAgo - 1))]] : []), ...(order.tracking ? [['Shipped · ' + order.tracking, fmtDate(Math.max(0, order.daysAgo - 2))]] : [])].map(t => ({ t:t[0], d:t[1] })),
+        address: cust.name + '\n' + '12 Example St.\n' + cust.country },
+      statusList: Object.keys(STATUS).map(k => ({ key:k, label:STATUS[k][0] })),
+      setOrderStatus: e => { this.updOrder(order.id, { statusKey:e.target.value }); this.toast('Status updated · customer notified'); },
+      setTracking: e => this.updOrder(order.id, { tracking:e.target.value }), saveTracking: () => this.toast('Tracking saved · shipping email sent'), setAdminNote: e => this.updOrder(order.id, { adminNote:e.target.value }),
+      sendProof: () => { this.updOrder(order.id, { proof:'sent' }); this.toast('Proof emailed to ' + order.email); }, approveProof: () => { this.updOrder(order.id, { proof:'approved', statusKey: order.statusKey === 'pending' || order.statusKey === 'review' ? 'production' : order.statusKey }); this.toast('Proof approved · moved to production'); },
+      refundOrder: () => { this.updOrder(order.id, { statusKey:'refunded' }); this.toast('Refund issued'); }, resendEmail: () => this.toast('Email sent'),
+      // queue
+      queue: S.queue.map(x => ({ ...x, href:'#/order/' + x.orderId, pending: x.state === 'pending', done: x.state !== 'pending', doneLabel: x.state === 'approved' ? 'Enhanced version approved' : x.state === 'kept' ? 'Original kept' : 'Better file requested from customer',
+        approve: () => upd('queue', x.id, { state:'approved' }), keep: () => upd('queue', x.id, { state:'kept' }), request: () => { upd('queue', x.id, { state:'requested' }); this.toast('Request emailed to customer'); } })),
+      // products
+      productList: S.products.map(p => ({ ...p, visible: !!S.features['prod_' + p.id], from: money(Math.min(...p.sizes.map(s => +s.price))), visLabel: S.features['prod_' + p.id] ? 'Visible' : 'Hidden', border: border(p.id === S.curProd), pick: () => this.setState({ curProd:p.id }) })),
+      curProduct: { ...curProduct, visible: !!S.features['prod_' + curProduct.id] }, toggleVisible: e => this.setFeatures({ ...S.features, ['prod_' + curProduct.id]: e.target.checked }), setProdName: e => this.updProd(curProduct.id, { name:e.target.value }), setBadge: e => this.updProd(curProduct.id, { badge:e.target.value }),
+      curSizes: curProduct.sizes.map((s, i) => ({ ...s, setPrice: e => this.updProd(curProduct.id, { sizes: curProduct.sizes.map((x, k) => k === i ? { ...x, price:e.target.value } : x) }), setCompare: e => this.updProd(curProduct.id, { sizes: curProduct.sizes.map((x, k) => k === i ? { ...x, compare:e.target.value } : x) }) })),
+      addons: S.addons.map((a, i) => ({ ...a, set: e => this.setState(s => ({ addons: s.addons.map((x, k) => k === i ? { ...x, price:e.target.value } : x) })) })),
+      savePricing: () => this.toast('Pricing published to store'),
+      // wall
+      wallTabs: [['pending','Pending'],['approved','Live'],['rejected','Rejected']].map(t => ({ label:t[1], n:S.wall.filter(w => w.state === t[0]).length, ...pill(S.wallTab === t[0]), pick: () => this.setState({ wallTab:t[0] }) })),
+      wallItems: wallItems.map(w => ({ ...w, isPending: w.state === 'pending', isApproved: w.state === 'approved', isRejected: w.state === 'rejected', unpaid: !w.paid, payLabel: w.paid ? 'paid' : 'unpaid',
+        approve: () => { upd('wall', w.id, { state:'approved', paid:true }); this.toast('Approved · $20 reward sent to ' + w.author); }, reject: () => upd('wall', w.id, { state:'rejected' }), pay: () => { upd('wall', w.id, { paid:true }); this.toast('$20 reward sent'); } })),
+      // reviews
+      reviewRows: S.reviews.map(r => ({ ...r, badge: r.published ? 'PUBLISHED' : 'PENDING', badgeBg: r.published ? '#E8F5EC' : '#FFF4E5', badgeColor: r.published ? '#1E8E3E' : '#B84A0E', action: r.published ? 'Unpublish' : 'Publish', toggle: () => upd('reviews', r.id, { published:!r.published }),
+        featBorder: r.featured ? '#E8362D' : '#E8E4DF', featBg: r.featured ? '#E8362D' : '#fff', featColor: r.featured ? '#fff' : '#8E8E8E', feature: () => upd('reviews', r.id, { featured:!r.featured }) })),
+      // promos
+      tiers: [['1 print'],['2 prints'],['3+ prints']].map((t, i) => ({ label:t[0], pct:S.tiers[i], set: e => this.setState(s => ({ tiers: s.tiers.map((x, k) => k === i ? e.target.value : x) })) })),
+      promoBarOn:S.features.promoBar, togglePromoBar: e => this.setFeatures({ ...S.features, promoBar:e.target.checked }), promoPreview: S.features.promoBar ? `EXCLUSIVE OFFER · ${S.tiers[0]}% OFF 1 PRINT · ${S.tiers[1]}% OFF 2+ PRINTS · ${S.tiers[2]}% OFF 3+ PRINTS` : 'Promo bar hidden',
+      newCode:S.newCode, newPct:S.newPct, setNewCode: e => this.setState({ newCode:e.target.value.toUpperCase() }), setNewPct: e => this.setState({ newPct:e.target.value }),
+      addCode: e => { e.preventDefault(); this.setState(s => ({ codes:[{ code:s.newCode, pct:+s.newPct || 0, uses:0, source:'Manual', active:true }, ...s.codes], newCode:'', newPct:'' })); this.toast('Code created'); },
+      codes: S.codes.map((c, i) => ({ ...c, state: c.active ? 'Active' : 'Paused', ...pill(c.active), toggle: () => this.setState(s => ({ codes: s.codes.map((x, k) => k === i ? { ...x, active:!x.active } : x) })), remove: () => this.setState(s => ({ codes: s.codes.filter((_, k) => k !== i) })) })),
+      // customers
+      customers: CUSTOMERS.map(c => { const os = custOrders(c.id); return { ...c, href:'#/customer/' + c.id, orders:os.length, spent: money(os.reduce((a, o) => a + +o.total, 0)), last: os.length ? os[0].date : '—' }; }).filter(c => !q || c.name.toLowerCase().includes(q) || c.email.includes(q)).sort((a, b) => b.spent - a.spent),
+      customer: (() => { const os = custOrders(cust.id); return { ...cust, orders:os.length, spent: money(os.reduce((a, o) => a + +o.total, 0)) }; })(), customerOrders: custOrders(cust.id),
+      // content
+      contentTabs: [['faq','FAQ'],['blog','Blog'],['policies','Policies']].map(t => ({ label:t[1], ...pill(S.contentTab === t[0]), pick: () => this.setState({ contentTab:t[0] }) })),
+      contentFaq: S.contentTab === 'faq', contentBlog: S.contentTab === 'blog', contentPolicies: S.contentTab === 'policies',
+      faqRows: S.faqs.map(f => ({ ...f, open: S.faqOpen === f.id, toggleLabel: S.faqOpen === f.id ? 'Collapse' : 'Edit answer', toggle: () => this.setState({ faqOpen: S.faqOpen === f.id ? -1 : f.id }), setQ: e => upd('faqs', f.id, { q:e.target.value }), setA: e => upd('faqs', f.id, { a:e.target.value }), remove: () => this.setState(s => ({ faqs: s.faqs.filter(x => x.id !== f.id) })) })),
+      addFaq: () => this.setState(s => { const id = Date.now(); return { faqs:[...s.faqs, { id, q:'New question', a:'' }], faqOpen:id }; }),
+      postRows: S.posts.map(p => ({ ...p, state: p.published ? 'PUBLISHED' : 'DRAFT', bg: p.published ? '#E8F5EC' : '#EFEBE6', color: p.published ? '#1E8E3E' : '#4A4A4A', action: p.published ? 'Unpublish' : 'Publish', toggle: () => upd('posts', p.id, { published:!p.published, date: p.published ? 'Draft' : 'Sep 15, 2026' }) })),
+      addPost: () => this.setState(s => ({ posts:[...s.posts, { id:Date.now(), date:'Draft', t:'Untitled post', d:'', published:false, c1:'#E6E4E1', c2:'#F0EEEB' }] })),
+      policyTabs: Object.keys(S.policies).map(k => ({ label:S.policies[k].label, updated:S.policies[k].updated, border: border(S.policyKey === k), pick: () => this.setState({ policyKey:k }) })),
+      policySections: pol.sections.map((s, i) => ({ h:s[0], p:s[1], setH: e => this.setPolicy(i, 0, e.target.value), setP: e => this.setPolicy(i, 1, e.target.value) })),
+      savePolicy: () => { this.setState(s => ({ policies: { ...s.policies, [s.policyKey]: { ...s.policies[s.policyKey], updated:'Sep 15' } } })); this.toast(pol.label + ' published'); },
+    };
+  }
+  setPolicy(i, j, v) { this.setState(s => { const p = s.policies[s.policyKey]; const sections = p.sections.map((sec, k) => k === i ? sec.map((x, m) => m === j ? v : x) : sec); return { policies: { ...s.policies, [s.policyKey]: { ...p, sections } } }; }); }
+}
+</script>
+</body>
+</html>
