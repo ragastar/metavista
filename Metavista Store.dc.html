@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="./assets/logo-mark.png">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -712,7 +713,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       <button onClick="{{ czBack }}" aria-label="Back" style="{{ wzBackStyle }}">←</button>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;min-width:0">
         <div aria-hidden="true" style="display:flex;gap:5px;align-items:center"><sc-for list="{{ czDots }}" as="d" hint-placeholder-count="4"><span style="width:{{ d.w }}px;height:6px;border-radius:3px;background:{{ d.bg }};transition:width .25s,background .25s"></span></sc-for></div>
-        <span style="font-size:11px;font-weight:800;letter-spacing:.12em;color:#6B6B6B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">STEP {{ czStepLabel }} OF {{ czStepTotal }} · {{ czStepName }}</span>
+        <span style="font-size:11px;font-weight:800;letter-spacing:.12em;color:#6B6B6B;line-height:1.35;text-align:center">STEP {{ czStepLabel }} OF {{ czStepTotal }} · {{ czStepName }}</span>
       </div>
       <button onClick="{{ closeWizard }}" aria-label="Close" style="width:40px;height:40px;border-radius:50%;border:1px solid #E8E4DF;background:#fff;font-size:18px;line-height:1;color:#141414">×</button>
     </div>
@@ -774,7 +775,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
             <p style="margin:8px 0 0;font-size:12px;color:#6B6B6B;text-align:center">{{ cropCaption }}</p>
             <sc-if value="{{ showOrigHint }}" hint-placeholder-val="{{ false }}"><div style="text-align:center;margin-top:8px"><button onClick="{{ askOriginal }}" style="border:1px solid #BFD8F2;background:#EEF6FF;color:#1F5C99;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700">💡 {{ origHintText }}</button></div></sc-if>
             <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
-              <sc-if value="{{ on.photo_rotate }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rotate }}" style="border:1px solid #E8E4DF;background:#fff;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">⟳ Rotate</button></sc-if>
+              <sc-if value="{{ on.photo_rotate }}" hint-placeholder-val="{{ true }}"><button onClick="{{ rotate }}" style="border:1px solid #E8E4DF;background:#fff;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ rotateLabel }}</button></sc-if>
               <sc-if value="{{ smartAvail }}" hint-placeholder-val="{{ true }}"><button onClick="{{ smartFocus }}" aria-pressed="{{ czSmart }}" style="border:1.5px solid {{ smartBorder }};background:{{ smartBg }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">◎ Smart Focus</button></sc-if>
               <sc-if value="{{ on.photo_originalRatio }}" hint-placeholder-val="{{ true }}">
                 <div role="group" aria-label="Crop mode" style="display:inline-flex;background:#F1EEEA;border-radius:999px;padding:3px"><button onClick="{{ setCropMode }}" aria-pressed="{{ isCropMode }}" style="border:0;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;background:{{ cropModeBg }}">Crop</button><button onClick="{{ askOriginal }}" aria-pressed="{{ isOrigMode }}" style="border:0;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;background:{{ origModeBg }}">Original ratio</button></div>
@@ -1270,6 +1271,7 @@ const serverEnhance = async (endpoint, blob) => {
 const loadSettings = () => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } };
 const RATIOS = { '1:1':[1,1], '3:4':[3,4], '2:3':[2,3] };
 const ratioAspect = (ratio, orient) => { const [a, b] = RATIOS[ratio] || [3,4]; return orient === 'landscape' ? b / a : a / b; };
+const ratioText = (ratio, orient) => orient === 'landscape' && RATIOS[ratio] && ratio !== '1:1' ? ratio.split(':').reverse().join(':') : ratio; // 3:4 landscape reads as 4:3
 const bestRatio = ar => { const orient = ar > 1.02 ? 'landscape' : 'portrait'; let best = '3:4', d = 9; for (const r of Object.keys(RATIOS)) { const v = Math.abs(Math.log(ar / ratioAspect(r, orient))); if (v < d) { d = v; best = r; } } return { ratio: best, orient: best === '1:1' ? 'portrait' : orient }; };
 // Crop geometry in working-image pixels + on-screen frame (long side = base px).
 const cropGeom = (cz, base = 290) => {
@@ -1385,7 +1387,11 @@ class PrintViewer {
     const add = (geo, mat, x, y, z, rx = 0) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.x = rx; this.hw.add(m); return m; };
     if (mount === 'float') { add(new T.BoxGeometry(gW * .38, gH * .38, .07), this.darkMat, 0, 0, -.035); add(new T.CylinderGeometry(.018, .018, .01, 20), this.hwMat, 0, gH * .12, -.075, Math.PI / 2); }
     else if (mount === 'magnet') { [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => add(new T.CylinderGeometry(.05, .05, .014, 32), this.hwMat, sx * gW * .36, sy * gH * .38, -.007, Math.PI / 2)); add(new T.BoxGeometry(gW * .42, gH * .3, .004), new T.MeshStandardMaterial({ color:0xf1f1f1, metalness:.1, roughness:.8 }), 0, 0, -.004); }
-    else { add(new T.BoxGeometry(gW * .56, .05, .022), this.hwMat, 0, gH * .36, -.011); add(new T.BoxGeometry(.075, gH * .42, .014), this.hwMat, 0, -gH * .08, -.05, -.32); }
+    else {
+      add(new T.BoxGeometry(gW * .56, .05, .022), this.hwMat, 0, gH * .36, -.011);
+      // kickstand: top end rests against the back, bottom end kicks out away from the plate
+      const len = gH * .42, tilt = .32; add(new T.BoxGeometry(.075, len, .014), this.hwMat, 0, -gH * .08, -(.009 + len / 2 * Math.sin(tilt)), tilt);
+    }
   }
   setMode(mode, animate) {
     const T = this.T, ctl = this.controls, cam = this.camera;
@@ -1498,8 +1504,11 @@ class Component extends DCLogic {
     if (this.state.cz.step === '3b') this.buildCompare();
   }
   async rotatePhoto() {
-    const cz = this.state.cz; if (!this._orig) return;
-    const r = await rotateImg(this._orig); this._orig = r.img;
+    if (!this._orig || this._rotating) return; this._rotating = true; this.setState({ rotBusy:true });
+    try { await this.rotateOnce(); } finally { this._rotating = false; this.setState({ rotBusy:false }); }
+  }
+  async rotateOnce() {
+    const r = await rotateImg(this._orig); this._orig = r.img; const cz = this.state.cz;
     const patch = { img:r.url, iw:cz.ih, ih:cz.iw, ow:cz.oh, oh:cz.ow, orient: cz.orient === 'portrait' ? 'landscape' : 'portrait', cx:.5, cy:.5, smart:false, rotQ:((cz.rotQ || 0) + 1) % 4 };
     if (cz.ratio === '1:1') patch.orient = 'portrait';
     if (this._enh) { const e = await rotateImg(this._enh); this._enh = e.img; patch.enh = e.url; }
@@ -1559,7 +1568,7 @@ class Component extends DCLogic {
     const results = [...VP.map(x => ({ kind:'PRODUCT', name:x.name, href:x.href, c1:x.c1, c2:x.c2 })), ...(on.nav_collab ? ARTISTS : []).map(x => ({ kind:'COLLECTION', name:x.name, href:x.href, c1:x.c1, c2:x.c2 }))].filter(r => !q || r.name.toLowerCase().includes(q));
     const isRegister = route.page === 'register';
     const [pw0, ph0] = this.printInches(p);
-    const spec = isHex ? `${cz.hexes.length} hexagons · ${cz.hexTop} top` : isIdol ? `Size ${cz.size} · ${pw0}″ × ${ph0}″` : `${cz.size} · ${pw0}″ × ${ph0}″ · ${cz.mode === 'orig' ? 'Original ratio' : cz.ratio} · ${FINISHES.find(f => f.id === cz.finish).t}${p.kind === 'rect' ? ' · ' + MOUNTS.find(m => m.id === cz.mount).t : ''}${cz.useEnh ? ' · S.HD™' : ''}`;
+    const spec = isHex ? `${cz.hexes.length} hexagons · ${cz.hexTop} top` : isIdol ? `Size ${cz.size} · ${pw0}″ × ${ph0}″` : `${cz.size} · ${pw0}″ × ${ph0}″ · ${cz.mode === 'orig' ? 'Original ratio' : ratioText(cz.ratio, cz.orient)} · ${FINISHES.find(f => f.id === cz.finish).t}${p.kind === 'rect' ? ' · ' + MOUNTS.find(m => m.id === cz.mount).t : ''}${cz.useEnh ? ' · S.HD™' : ''}`;
     const addNow = () => { if (isHex ? !cz.img : !cz.final) { this.toastMsg('Upload a photo first'); return false; } this.addItem({ name: p.name, spec, price: unit, qty: cz.qty, img: cz.thumb || '' }); return true; };
     const trackSteps = [['Order confirmed','Payment received',1],['Photo reviewed & enhanced','S.HD™ team approved',1],['In production','Dye-sublimation on 1 mm aluminum',1],['Shipped','Handed to carrier',1],['Delivered','—',0]].map(s => ({ t:s[0], d:s[1], bg: s[2] ? '#E8362D' : '#fff', border: s[2] ? '#E8362D' : '#C9C2BA', color: s[2] ? '#141414' : '#8E8E8E' }));
     const finishCards = [
@@ -1617,7 +1626,7 @@ class Component extends DCLogic {
     const roomIdx = pv.startsWith('room') ? +pv.slice(4) : 0, room = ROOMS[roomIdx];
     const mountId = isRectLike && p.kind === 'rect' ? cz.mount : 'standard';
     const shadow = mountId === 'float' ? '10px 18px 22px rgba(0,0,0,.38)' : mountId === 'magnet' ? '2px 4px 7px rgba(0,0,0,.28)' : '4px 8px 12px rgba(0,0,0,.3)';
-    const IN = 0.8; // % of stage width per inch — a 48″ sideboard spans 38.4%
+    const IN = 0.8; // % of stage width per inch — a 48″ sideboard spans 38.4%; print hangs 9″ above its top (stage is square)
     const glossPos = Math.max(0, Math.min(100, 50 + ((((r3.y % 360) + 540) % 360) - 180) * 1.3));
     const wmBase = { position:'absolute', inset:0, backgroundImage: WM_URL, backgroundRepeat:'repeat', pointerEvents:'none' };
     const qual = cz.step === 3 ? qualityFor(cz.size) : null, qual4 = cz.step === 4 && cz.img && !(p.kind === 'hex') ? qualityFor(cz.size) : null;
@@ -1641,7 +1650,7 @@ class Component extends DCLogic {
       cropDown: e => { if (cz.mode === 'orig' || !g) return; e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); this._drag = { x:e.clientX, y:e.clientY, cx: clampC(cz.cx, g.cw / cz.iw / 2), cy: clampC(cz.cy, g.ch / cz.ih / 2) }; },
       cropMove: e => { const d = this._drag; if (!d) return; const c = this.state.cz, gg = cropGeom(c); this.cz({ smart:false, cx: clampC(d.cx - (e.clientX - d.x) / gg.k / c.iw, gg.cw / c.iw / 2), cy: clampC(d.cy - (e.clientY - d.y) / gg.k / c.ih, gg.ch / c.ih / 2) }); },
       cropUp: () => { this._drag = null; },
-      cropCaption: cz.mode === 'orig' ? `Full image · ${pw}″ × ${phh}″ at size ${cz.size}` : `Drag to adjust · ${cz.orient === 'landscape' ? 'Landscape' : 'Portrait'} · ${cz.ratio}`,
+      cropCaption: cz.mode === 'orig' ? `Full image · ${pw}″ × ${phh}″ at size ${cz.size}` : `Drag to adjust · ${cz.orient === 'landscape' ? 'Landscape' : 'Portrait'} · ${ratioText(cz.ratio, cz.orient)}`,
       showOrigHint: origLoss > 0.2, origHintText: `Your crop hides ${Math.round(origLoss * 100)}% of the photo — try "Original ratio" to keep it all`,
       isCropMode: cz.mode !== 'orig', isOrigMode: cz.mode === 'orig', cropModeBg: cz.mode !== 'orig' ? '#fff' : 'transparent', origModeBg: cz.mode === 'orig' ? '#fff' : 'transparent',
       setCropMode: () => this.cz({ mode:'crop' }), askOriginal: () => this.setState({ modal:'orig' }), confirmOriginal: () => { this.cz({ mode:'orig', zoom:1, cx:.5, cy:.5, smart:false }); this.setState({ modal:null }); },
@@ -1649,7 +1658,7 @@ class Component extends DCLogic {
       isPortrait: cz.orient !== 'landscape', isLandscape: cz.orient === 'landscape',
       setPortrait: () => this.cz({ orient:'portrait' }), setLandscape: () => this.cz({ orient: cz.ratio === '1:1' ? 'portrait' : 'landscape' }),
       portraitBorder: border(cz.orient !== 'landscape'), landscapeBorder: border(cz.orient === 'landscape'),
-      rotate: () => this.rotatePhoto(), smartAvail: on.photo_smartFocus && cz.mode !== 'orig', czSmart: !!cz.smart, smartFocus: () => this.toggleSmart(), smartBorder: cz.smart ? '#E8362D' : '#E8E4DF', smartBg: cz.smart ? '#FFF4EE' : '#fff',
+      rotate: () => this.rotatePhoto(), rotateLabel: S.rotBusy ? '⟳ Rotating…' : '⟳ Rotate', smartAvail: on.photo_smartFocus && cz.mode !== 'orig', czSmart: !!cz.smart, smartFocus: () => this.toggleSmart(), smartBorder: cz.smart ? '#E8362D' : '#E8E4DF', smartBg: cz.smart ? '#FFF4EE' : '#fff',
       qual, qual4, openQDemo: () => this.setState({ modal:'qdemo', qdemoPos:50, qdemoZoom:1 }),
       shdPill: on.shd_enhance ? shdPill : '', shdPillBg: cz.shd === 'done' ? '#EAF6EE' : cz.shd === 'err' ? '#FDECEC' : '#F1EEEA', shdPillColor: cz.shd === 'done' ? '#1E7A3A' : cz.shd === 'err' ? '#B3261E' : '#4A4A4A',
       czBack: () => { this._drag = null; const s = cz.step; if (s === 4) this.cz({ step: p.kind === 'idol' ? 2 : (cz.shd === 'done' && on.shd_enhance ? '3b' : 3) }); else if (s === '3b') this.cz({ step:3 }); else if (s === 3) this.cz({ step:2 }); else this.cz({ step: skip1 ? 2 : 1 }); },
@@ -1690,7 +1699,7 @@ class Component extends DCLogic {
       rotMove: e => { const d = this._rot; if (!d) return; const base = pv === 'back' ? 180 : 0; this.cz({ r3: { x: Math.max(-28, Math.min(28, d.r.x - (e.clientY - d.y) * .3)), y: Math.max(base - 75, Math.min(base + 75, d.r.y + (e.clientX - d.x) * .5)) } }); },
       rotUp: () => { this._rot = null; this.cz({}); },
       room, roomCaption: `${pw}″ × ${phh}″ shown to scale · 48″ sideboard`,
-      roomPrintStyle: { position:'absolute', left:'50%', top:'12%', width: (pw * IN) + '%', aspectRatio: `${pw} / ${phh}`, transform:'translateX(-50%)', boxShadow: shadow, background: fin.bg, overflow:'hidden', borderRadius:'1px' },
+      roomPrintStyle: { position:'absolute', left:'50%', bottom:`${32.4 + 9 * IN}%`, width: (pw * IN) + '%', aspectRatio: `${pw} / ${phh}`, transform:'translateX(-50%)', boxShadow: shadow, background: fin.bg, overflow:'hidden', borderRadius:'1px' },
       roomGloss: { position:'absolute', inset:0, background:'linear-gradient(120deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.22) 52%,rgba(255,255,255,0) 64%)', pointerEvents:'none' },
       flatStyle: { position:'relative', width: plW + 'px', height: plH + 'px', boxShadow:'0 20px 40px rgba(0,0,0,.25)', overflow:'hidden' },
       printLabel: `${pw}″ × ${phh}″ (${pw === phh ? 'Square' : pw > phh ? 'Landscape' : 'Portrait'})${cz.mode === 'orig' && p.kind !== 'idol' ? ' · original ratio' : ''}${cz.useEnh ? ' · S.HD™ enhanced' : ''}`,
@@ -1698,7 +1707,7 @@ class Component extends DCLogic {
       finishOptions: FINISHES.map(f => ({ ...f, on: cz.finish === f.id, bg2: cz.finish === f.id ? '#F7F3EE' : '#fff', border: border(cz.finish === f.id), pick: () => this.cz({ finish:f.id }) })),
       mountOptions: MOUNTS.map(m => ({ ...m, on: cz.mount === m.id, bg2: cz.mount === m.id ? '#F7F3EE' : '#fff', icon: m.id === 'magnet' ? '◉' : m.id === 'float' ? '▣' : '▭', border: border(cz.mount === m.id), priceColor: m.price ? '#141414' : '#1E7A3A', pick: () => this.cz({ mount:m.id, tip:-1 }) })),
       // wizard chrome
-      addToCart: () => { if (addNow()) { this.closeWizard(); this.setState({ cartOpen:true }); this.toastMsg('Added to cart'); } },
+      addToCart: () => { if (addNow()) { this.closeWizard(); this.setState({ cartOpen:true }); } }, // the opened cart drawer is the confirmation
       buyNow: () => { if (addNow()) { this.closeWizard(); this.setState({ cartOpen:false }); location.hash = '#/checkout'; } },
       wizOpen: S.wizOpen && route.page === 'product', openWizard: () => this.openWizard(), closeWizard: () => this.closeWizard(),
       ctaLabel: cz.img ? 'CONTINUE YOUR DESIGN' : 'START CREATING', ctaSteps: total,
