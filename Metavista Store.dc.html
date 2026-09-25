@@ -4,15 +4,27 @@
 <meta charset="utf-8">
 <title>Metavista — Custom HD Metal Prints</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="./assets/logo-mark.png">
+<link rel="icon" type="image/png" href="./assets/favicon-48.png">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- React is loaded here (in parallel with support.js) instead of by support.js after it runs; support.js skips its own load when window.React exists -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
 <script src="./support.js"></script>
+<style>
+body{margin:0;background:#FBFAF8}
+.mv-skel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#FBFAF8;z-index:1}
+.mv-skel img{height:56px;width:auto;animation:mv-skel 1.2s ease-in-out infinite alternate}
+@keyframes mv-skel{from{opacity:.35}to{opacity:1}}
+#dc-root:not(:empty) ~ .mv-skel{display:none}
+</style>
 </head>
 <body>
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#FBFAF8;color:#141414;font-family:Montserrat,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
@@ -34,16 +46,28 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 .wz-4{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
 .wz-side{padding-top:4px}
 .mv-hero{position:sticky;top:124px}
+.mv-icon-btn{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
+.mv-search-m{display:none!important}
 @media (max-width:720px){
   .mv-header{position:static!important}
-  .mv-nav{flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .mv-nav::-webkit-scrollbar{display:none}
-  .mv-nav > *{flex-shrink:0}
+  .mv-nav{justify-content:flex-start!important;gap:0 2px!important;margin:0 -8px}
+  .mv-nav > div > button,.mv-nav > a{padding:9px 8px!important}
+  .mv-nav .mv-dd{position:fixed!important;left:12px!important;right:12px;top:auto;min-width:0!important;z-index:45}
   .mv-search{display:none!important}
+  .mv-search-m{display:inline-flex!important}
+  .mv-hdr{gap:6px!important;padding:0 14px!important}
+  .mv-logo{font-size:19px!important}
+  .mv-hdr-act > a{padding:8px 6px!important}
+  .mv-cart{padding:0 12px!important}
+  input,textarea,select{font-size:16px!important}
+  .mv-has-cta{padding-bottom:84px}
   .mv-cz{position:static}
   .mv-mobile-cta{display:block}
   .mv-bundles{grid-template-columns:1fr!important}
   .mv-hero{position:static}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
 @media (max-width:860px){
   .wz-2col{grid-template-columns:minmax(0,1fr)!important;gap:22px}
@@ -60,9 +84,9 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <sc-if value="{{ on.promoBar }}" hint-placeholder-val="{{ false }}">
 <div style="background:#141414;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;overflow:hidden;white-space:nowrap;padding:9px 0">
   <div style="display:inline-flex;gap:64px;animation:mv-marquee 28s linear infinite;padding-left:32px">
-    <span>EXCLUSIVE OFFER · 10% OFF 1 PRINT · 25% OFF 2+ PRINTS · 35% OFF 3+ PRINTS</span>
+    <span>{{ promoText }}</span>
     <span>FREE HD ENHANCEMENT ON EVERY ORDER · MAGNETIC MOUNT INCLUDED</span>
-    <span>EXCLUSIVE OFFER · 10% OFF 1 PRINT · 25% OFF 2+ PRINTS · 35% OFF 3+ PRINTS</span>
+    <span>{{ promoText }}</span>
     <span>FREE HD ENHANCEMENT ON EVERY ORDER · MAGNETIC MOUNT INCLUDED</span>
   </div>
 </div>
@@ -70,16 +94,16 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 
 <!-- HEADER -->
 <header class="mv-header" style="position:sticky;top:0;z-index:40;background:rgba(251,250,248,.94);backdrop-filter:blur(10px);border-bottom:1px solid #E8E4DF">
-  <div style="max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:20px;min-height:64px;flex-wrap:wrap">
-    <a href="#/" style="display:flex;align-items:center;gap:8px;color:#141414;font-weight:800;font-size:22px;letter-spacing:-.02em;flex-shrink:0;padding:12px 0">
-      <img src="assets/logo-mark.png" alt="Metavista" style="height:30px;width:auto;display:block">
+  <div class="mv-hdr" style="max-width:1280px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:20px;min-height:64px;flex-wrap:wrap">
+    <a href="#/" class="mv-logo" style="display:flex;align-items:center;gap:8px;color:#141414;font-weight:800;font-size:22px;letter-spacing:-.02em;flex-shrink:0;padding:12px 0">
+      <img src="assets/logo-mark-2x.png" alt="" width="34" height="30" style="height:30px;width:auto;display:block">
       <span>Metavista</span>
     </a>
     <nav class="mv-nav" aria-label="Main" style="display:flex;gap:4px;flex:1 1 auto;justify-content:center;flex-wrap:wrap;min-width:0;order:3;flex-basis:100%;padding-bottom:6px;row-gap:0" onMouseLeave="{{ closeMenu }}">
       <div style="position:relative" onMouseEnter="{{ openMenuPrints }}">
         <button onClick="{{ toggleMenuPrints }}" aria-haspopup="true" aria-expanded="{{ menuPrints }}" style="background:none;border:0;padding:10px 12px;font-size:13px;font-weight:600;color:#141414">Custom HD Metal Prints ▾</button>
         <sc-if value="{{ menuPrints }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8E4DF;border-radius:14px;box-shadow:0 20px 50px rgba(20,20,20,.12);padding:10px;min-width:260px;display:grid;gap:2px;animation:mv-in .18s ease">
+          <div class="mv-dd" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8E4DF;border-radius:14px;box-shadow:0 20px 50px rgba(20,20,20,.12);padding:10px;min-width:260px;display:grid;gap:2px;animation:mv-in .18s ease">
             <sc-for list="{{ products }}" as="p" hint-placeholder-count="6">
               <a href="{{ p.href }}" onClick="{{ closeMenu }}" style="display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;color:#141414;font-size:13px;font-weight:600" style-hover="background:#F7F3EE">
                 <span style="width:34px;height:34px;border-radius:8px;flex-shrink:0;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 6px,{{ p.c2 }} 6px 12px)"></span>
@@ -93,7 +117,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       <div style="position:relative" onMouseEnter="{{ openMenuArt }}">
         <button onClick="{{ toggleMenuArt }}" aria-haspopup="true" aria-expanded="{{ menuArt }}" style="background:none;border:0;padding:10px 12px;font-size:13px;font-weight:600;color:#141414">Collaboration ▾</button>
         <sc-if value="{{ menuArt }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8E4DF;border-radius:14px;box-shadow:0 20px 50px rgba(20,20,20,.12);padding:10px;min-width:230px;display:grid;gap:2px;animation:mv-in .18s ease">
+          <div class="mv-dd" style="position:absolute;top:100%;left:0;background:#fff;border:1px solid #E8E4DF;border-radius:14px;box-shadow:0 20px 50px rgba(20,20,20,.12);padding:10px;min-width:230px;display:grid;gap:2px;animation:mv-in .18s ease">
             <sc-for list="{{ artists }}" as="a" hint-placeholder-count="8">
               <a href="{{ a.href }}" onClick="{{ closeMenu }}" style="padding:9px 10px;border-radius:10px;color:#141414;font-size:13px;font-weight:600" style-hover="background:#F7F3EE">{{ a.name }}</a>
             </sc-for>
@@ -106,15 +130,16 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       <sc-if value="{{ on.nav_mount }}" hint-placeholder-val="{{ true }}"><a href="#/mount" style="padding:10px 12px;font-size:13px;font-weight:600;color:#141414">Magnetic Mount</a></sc-if>
       <sc-if value="{{ on.nav_track }}" hint-placeholder-val="{{ true }}"><a href="#/track" style="padding:10px 12px;font-size:13px;font-weight:600;color:#141414">Track Your Order</a></sc-if>
     </nav>
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto">
+    <div class="mv-hdr-act" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:auto">
       <sc-if value="{{ on.headerSearch }}" hint-placeholder-val="{{ true }}">
       <form class="mv-search" role="search" onSubmit="{{ submitSearch }}" style="display:flex;align-items:center;border:1px solid #E8E4DF;border-radius:999px;padding:0 12px;height:38px;background:#fff">
         <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Search" aria-label="Search products" style="border:0;outline:0;width:110px;font-size:13px;background:none">
         <button type="submit" aria-label="Search" style="background:none;border:0;padding:6px;color:#4A4A4A;font-size:14px">⌕</button>
       </form>
+      <a class="mv-search-m mv-icon-btn" href="#/search" aria-label="Search" style="color:#141414;font-size:20px">⌕</a>
       </sc-if>
       <sc-if value="{{ on.headerLogin }}" hint-placeholder-val="{{ true }}"><a href="#/login" title="Log in" style="padding:8px;color:#141414;font-size:13px;font-weight:600">Log in</a></sc-if>
-      <button onClick="{{ openCart }}" style="position:relative;background:#141414;color:#fff;border:0;border-radius:999px;height:38px;padding:0 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
+      <button onClick="{{ openCart }}" aria-label="{{ cartAria }}" class="mv-cart" style="position:relative;background:#141414;color:#fff;border:0;border-radius:999px;height:38px;padding:0 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px">
         Cart <span style="background:linear-gradient(135deg,#F7B21B,#F26A1B,#E8362D);border-radius:999px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0 6px">{{ cartCount }}</span>
       </button>
     </div>
@@ -144,9 +169,9 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1.4fr 1fr;grid-template-rows:180px 180px;gap:14px">
-      <a href="#/product/classic" style="grid-row:span 2;border-radius:20px;background:repeating-linear-gradient(135deg,#EDE7E0 0 12px,#F5F0EA 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">hero: living room, 20×30 metal print</a>
-      <a href="#/product/idol" style="border-radius:20px;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">idol print</a>
-      <a href="#/product/classic" style="border-radius:20px;background:repeating-linear-gradient(135deg,#F3E3D6 0 12px,#F9EEE5 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">classic print on wall</a>
+      <a href="#/product/classic" aria-label="Custom HD Metal Print" style="grid-row:span 2;border-radius:20px;background:repeating-linear-gradient(135deg,#EDE7E0 0 12px,#F5F0EA 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></a>
+      <a href="#/product/idol" aria-label="Idol Metal Print" style="border-radius:20px;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></a>
+      <a href="#/product/classic" aria-label="Classic metal print" style="border-radius:20px;background:repeating-linear-gradient(135deg,#F3E3D6 0 12px,#F9EEE5 12px 24px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></a>
     </div>
   </section>
   </sc-if>
@@ -202,7 +227,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
         <sc-for list="{{ galleryCards }}" as="g" hint-placeholder-count="5">
           <div style="border-radius:16px;overflow:hidden;background:#1F1F1F;border:1px solid #2C2C2C">
-            <div style="aspect-ratio:4/5;background:repeating-linear-gradient(135deg,{{ g.c1 }} 0 10px,{{ g.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ g.ph }}</div>
+            <div style="aspect-ratio:4/5;background:repeating-linear-gradient(135deg,{{ g.c1 }} 0 10px,{{ g.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div>
             <div style="padding:14px 16px 18px"><strong style="font-size:14px">{{ g.t }}</strong><span style="display:block;font-size:12.5px;color:#B9B4AE;margin-top:4px">{{ g.d }}</span></div>
           </div>
         </sc-for>
@@ -220,9 +245,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
       <sc-for list="{{ products }}" as="p" hint-placeholder-count="6">
         <a href="{{ p.href }}" style="display:block;color:#141414;background:#fff;border:1px solid #E8E4DF;border-radius:20px;overflow:hidden;transition:transform .2s" style-hover="transform:translateY(-3px)">
-          <div style="position:relative;aspect-ratio:1;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 12px,{{ p.c2 }} 12px 24px);display:flex;align-items:flex-end;padding:14px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">
-            {{ p.ph }}
-            <sc-if value="{{ p.best }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;left:14px;background:#141414;color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:6px 10px;border-radius:999px">BESTSELLER</span></sc-if>
+          <div style="position:relative;aspect-ratio:1;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 12px,{{ p.c2 }} 12px 24px);display:flex;align-items:flex-end;padding:14px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"><sc-if value="{{ p.best }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;left:14px;background:#141414;color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:6px 10px;border-radius:999px">BESTSELLER</span></sc-if>
           </div>
           <div style="padding:18px 20px 22px">
             <strong style="font-size:16px;display:block;margin-bottom:6px">{{ p.name }}</strong>
@@ -249,8 +272,8 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div style="aspect-ratio:3/4;border-radius:14px;border:14px solid #5B4636;background:repeating-linear-gradient(135deg,#D9D3CC 0 10px,#E4DED7 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">framed print</div>
-        <div style="aspect-ratio:3/4;border-radius:6px;background:repeating-linear-gradient(135deg,#F3E3D6 0 10px,#F9EEE5 10px 20px);box-shadow:0 20px 40px rgba(20,20,20,.18);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">metal print</div>
+        <div style="aspect-ratio:3/4;border-radius:14px;border:14px solid #5B4636;background:repeating-linear-gradient(135deg,#D9D3CC 0 10px,#E4DED7 10px 20px);display:flex;align-items:flex-end;padding:10px"><span style="background:rgba(255,255,255,.9);color:#141414;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px">Framed print</span></div>
+        <div style="aspect-ratio:3/4;border-radius:6px;background:repeating-linear-gradient(135deg,#F3E3D6 0 10px,#F9EEE5 10px 20px);box-shadow:0 20px 40px rgba(20,20,20,.18);display:flex;align-items:flex-end;padding:10px"><span style="background:#141414;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px">Metavista metal print</span></div>
       </div>
     </div>
   </section>
@@ -303,7 +326,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
     <div class="mv-stories">
       <sc-for list="{{ wallPreview }}" as="w" hint-placeholder-count="6">
         <div onClick="{{ goStory }}" style="display:block;color:#141414;border-radius:16px;overflow:hidden;background:#fff;border:1px solid #E8E4DF;cursor:{{ storyCursor }}">
-          <div style="aspect-ratio:1;background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ w.ph }}</div>
+          <div style="aspect-ratio:1;background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div>
           <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px"><span><strong>{{ w.author }}</strong><span style="color:#6B6B6B"> · {{ w.city }}</span></span><span style="font-weight:700">♥ {{ w.votes }}</span></div>
         </div>
       </sc-for>
@@ -319,7 +342,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
       <sc-for list="{{ featuredArtists }}" as="a" hint-placeholder-count="2">
         <div style="display:grid;grid-template-columns:140px 1fr;gap:20px;background:#fff;border:1px solid #E8E4DF;border-radius:20px;padding:20px">
-          <div style="aspect-ratio:3/4;border-radius:12px;background:repeating-linear-gradient(135deg,{{ a.c1 }} 0 10px,{{ a.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:8px;font-family:ui-monospace,monospace;font-size:10px;color:#6B6B6B">{{ a.ph }}</div>
+          <div style="aspect-ratio:3/4;border-radius:12px;background:repeating-linear-gradient(135deg,{{ a.c1 }} 0 10px,{{ a.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:8px;font-family:ui-monospace,monospace;font-size:10px;color:#6B6B6B"></div>
           <div><h3 style="margin:0 0 4px;font-size:20px;font-weight:800">{{ a.name }} × Metavista</h3><p style="margin:0 0 8px;font-size:12.5px;font-weight:700;color:#E8362D">{{ a.sub }}</p><p style="margin:0 0 14px;font-size:13.5px;color:#4A4A4A;line-height:1.55">{{ a.desc }}</p><a href="{{ a.href }}" style="font-weight:700;font-size:13px;color:#141414;border-bottom:2px solid #F26A1B">{{ a.cta }} →</a></div>
         </div>
       </sc-for>
@@ -331,12 +354,13 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 
 <!-- ================= PRODUCT / CUSTOMIZER ================= -->
 <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
-<div data-screen-label="Product" style="max-width:1280px;margin:0 auto;padding:24px 20px 72px">
+<div data-screen-label="Product" class="mv-has-cta" style="max-width:1280px;margin:0 auto;padding:24px 20px 72px">
+  <sc-if value="{{ mobileCta }}" hint-placeholder-val="{{ false }}"><div class="mv-mobile-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:30;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(251,250,248,.96);backdrop-filter:blur(8px);border-top:1px solid #E8E4DF"><button onClick="{{ openWizard }}" style="display:block;width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:15px;letter-spacing:.05em;color:#fff;background:#141414">↑ {{ ctaLabel }} · from ${{ product.from }}</button></div></sc-if>
   <p style="margin:0 0 20px;font-size:12.5px;color:#6B6B6B"><a href="#/" style="color:#6B6B6B">Home</a> / {{ product.name }}</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:40px;align-items:start">
     <!-- Left: hero -->
     <div class="mv-hero">
-      <div style="aspect-ratio:1;border-radius:22px;background:repeating-linear-gradient(135deg,{{ product.c1 }} 0 14px,{{ product.c2 }} 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">{{ product.ph }} — product hero</div>
+      <div style="aspect-ratio:1;border-radius:22px;background:repeating-linear-gradient(135deg,{{ product.c1 }} 0 14px,{{ product.c2 }} 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
     </div>
 
     <!-- Right: info + start -->
@@ -396,7 +420,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
       <sc-for list="{{ mounts }}" as="m" hint-placeholder-count="3">
         <div style="position:relative;background:#fff;border:1px solid #E8E4DF;border-radius:20px;overflow:hidden">
           <sc-if value="{{ m.best }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:6px 10px;border-radius:999px;z-index:1">★ BEST SELLER</span></sc-if>
-          <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">video: {{ m.t }}</div>
+          <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
           <div style="padding:18px 20px 22px"><span style="font-size:11px;font-weight:700;color:#E8362D;letter-spacing:.08em">{{ m.sub }}</span><h3 style="margin:4px 0 10px;font-size:20px;font-weight:800">{{ m.t }}</h3><ul style="margin:0;padding-left:18px;font-size:13px;color:#4A4A4A;line-height:1.7"><sc-for list="{{ m.pts }}" as="pt" hint-placeholder-count="3"><li>{{ pt }}</li></sc-for></ul></div>
         </div>
       </sc-for>
@@ -421,13 +445,13 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <div data-screen-label="Collection" style="max-width:1280px;margin:0 auto;padding:24px 20px 72px">
   <p style="margin:0 0 20px;font-size:12.5px;color:#6B6B6B"><a href="#/" style="color:#6B6B6B">Home</a> / Collections / {{ artist.name }}</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px;align-items:center;margin-bottom:40px">
-    <div style="aspect-ratio:16/9;border-radius:22px;background:repeating-linear-gradient(135deg,{{ artist.c1 }} 0 14px,{{ artist.c2 }} 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">{{ artist.ph }} — collection banner</div>
+    <div style="aspect-ratio:16/9;border-radius:22px;background:repeating-linear-gradient(135deg,{{ artist.c1 }} 0 14px,{{ artist.c2 }} 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
     <div><p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.14em;color:#E8362D">COLLABORATION</p><h1 style="margin:0 0 8px;font-size:clamp(30px,4vw,48px);font-weight:800;letter-spacing:-.02em">{{ artist.name }} × Metavista</h1><p style="margin:0 0 10px;font-weight:700;color:#4A4A4A">{{ artist.sub }}</p><p style="margin:0;color:#4A4A4A;line-height:1.6">{{ artist.desc }}</p></div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px">
     <sc-for list="{{ artworks }}" as="w" hint-placeholder-count="6">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
-        <div style="aspect-ratio:3/4;background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ w.ph }}</div>
+        <div style="aspect-ratio:3/4;background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div>
         <div style="padding:14px 16px 16px"><strong style="font-size:14px;display:block">{{ w.t }}</strong><span style="font-size:12px;color:#6B6B6B">Metal print · from ${{ w.price }}</span><button onClick="{{ w.add }}" style="display:block;width:100%;margin-top:10px;border:1.5px solid #141414;background:none;border-radius:999px;padding:9px;font-weight:700;font-size:12.5px">Add to Cart</button></div>
       </div>
     </sc-for>
@@ -446,7 +470,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
     <sc-for list="{{ wall }}" as="w" hint-placeholder-count="12">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
-        <div style="aspect-ratio:{{ w.ar }};background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ w.ph }}</div>
+        <div style="aspect-ratio:{{ w.ar }};background:repeating-linear-gradient(135deg,{{ w.c1 }} 0 10px,{{ w.c2 }} 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div>
         <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px">
           <div><strong style="font-size:13.5px;display:block">{{ w.title }}</strong><span style="font-size:12px;color:#6B6B6B">{{ w.author }} · {{ w.city }}</span></div>
           <button onClick="{{ w.vote }}" style="border:1.5px solid {{ w.voteBorder }};background:{{ w.voteBg }};color:{{ w.voteColor }};border-radius:999px;padding:7px 12px;font-weight:700;font-size:12.5px;flex-shrink:0">♥ {{ w.votes }}</button>
@@ -462,7 +486,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <div data-screen-label="About Us">
   <section style="max-width:1280px;margin:0 auto;padding:24px 20px 0"><p style="margin:0 0 20px;font-size:12.5px;color:#6B6B6B"><a href="#/" style="color:#6B6B6B">Home</a> / About us</p></section>
   <section style="text-align:center;padding:40px 20px 56px">
-    <img src="assets/logo-mark.png" alt="Metavista" style="height:72px;width:auto;margin-bottom:18px">
+    <img src="assets/logo-mark-2x.png" alt="Metavista" width="82" height="72" style="height:72px;width:auto;margin-bottom:18px">
     <h1 style="margin:0 0 12px;font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-.03em">Metavista Brand Story</h1>
     <p style="margin:0 auto;color:#4A4A4A;font-size:17px;max-width:520px">Capturing life's golden moments on timeless metal prints.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;max-width:960px;margin:40px auto 0">
@@ -471,7 +495,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
   </section>
   <sc-for list="{{ aboutBlocks }}" as="ab" hint-placeholder-count="4">
     <section style="max-width:1080px;margin:0 auto;padding:36px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:40px;align-items:center">
-      <div style="order:{{ ab.imgOrder }};aspect-ratio:4/3;border-radius:22px;background:repeating-linear-gradient(135deg,{{ ab.c1 }} 0 12px,{{ ab.c2 }} 12px 24px);display:flex;align-items:flex-end;padding:14px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">{{ ab.ph }}</div>
+      <div style="order:{{ ab.imgOrder }};aspect-ratio:4/3;border-radius:22px;background:repeating-linear-gradient(135deg,{{ ab.c1 }} 0 12px,{{ ab.c2 }} 12px 24px);display:flex;align-items:flex-end;padding:14px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
       <div><p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:.14em;color:#E8362D">{{ ab.k }}</p><h2 style="margin:0 0 12px;font-size:32px;font-weight:800;letter-spacing:-.02em">{{ ab.t }}</h2><p style="margin:0;color:#4A4A4A;line-height:1.65;white-space:pre-line">{{ ab.d }}</p></div>
     </section>
   </sc-for>
@@ -488,7 +512,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <div data-screen-label="Magnetic Mount" style="max-width:1280px;margin:0 auto;padding:24px 20px 72px">
   <p style="margin:0 0 20px;font-size:12.5px;color:#6B6B6B"><a href="#/" style="color:#6B6B6B">Home</a> / Safe-Wall Magnetic Mounting System</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:start">
-    <div style="aspect-ratio:1;border-radius:22px;background:repeating-linear-gradient(135deg,#E6E4E1 0 14px,#F0EEEB 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">magnetic mount kit — product photo</div>
+    <div style="aspect-ratio:1;border-radius:22px;background:repeating-linear-gradient(135deg,#E6E4E1 0 14px,#F0EEEB 14px 28px);display:flex;align-items:flex-end;padding:16px;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
     <div>
       <h1 style="margin:0 0 10px;font-size:clamp(28px,3.5vw,40px);font-weight:800;letter-spacing:-.02em">Safe-Wall Magnetic Mounting System</h1>
       <p style="margin:0 0 16px;color:#4A4A4A;line-height:1.6">No drilling, no nails. Attach the residue-free adhesive strip to your wall and your print snaps into place. Swap prints anytime — your wall stays flawless.</p>
@@ -513,12 +537,13 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
   <sc-if value="{{ trackResult }}" hint-placeholder-val="{{ false }}">
     <div style="margin-top:20px;background:#fff;border:1px solid #E8E4DF;border-radius:20px;padding:24px;animation:mv-in .2s ease">
       <p style="margin:0 0 4px;font-size:12px;color:#6B6B6B;font-weight:700;letter-spacing:.08em">ORDER {{ trackIdShown }}</p>
-      <h2 style="margin:0 0 18px;font-size:22px;font-weight:800">In transit · arriving in 4–6 business days</h2>
-      <div style="display:grid;gap:12px">
+      <h2 style="margin:0 0 18px;font-size:22px;font-weight:800">{{ trackTitle }}</h2>
+      <sc-if value="{{ trackFound }}" hint-placeholder-val="{{ true }}"><div style="display:grid;gap:12px">
         <sc-for list="{{ trackSteps }}" as="s" hint-placeholder-count="5">
           <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:20px;height:20px;border-radius:50%;flex-shrink:0;background:{{ s.bg }};border:2px solid {{ s.border }}"></span><div><strong style="font-size:13.5px;color:{{ s.color }}">{{ s.t }}</strong><span style="display:block;font-size:12px;color:#6B6B6B">{{ s.d }}</span></div></div>
         </sc-for>
-      </div>
+      </div></sc-if>
+      <sc-if value="{{ trackMissing }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:14px;color:#4A4A4A;line-height:1.6">Check the ID in your confirmation email (it looks like MV-48213). Still stuck? Email <a href="mailto:support@metavista.com" style="font-weight:700">support@metavista.com</a> and we'll look it up.</p></sc-if>
     </div>
   </sc-if>
 </div>
@@ -562,7 +587,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
     <sc-for list="{{ mounts }}" as="m" hint-placeholder-count="3">
       <div style="position:relative;background:#fff;border:1px solid #E8E4DF;border-radius:20px;overflow:hidden">
         <sc-if value="{{ m.best }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:6px 10px;border-radius:999px;z-index:1">★ BEST SELLER</span></sc-if>
-        <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B">video: {{ m.t }}</div>
+        <div style="aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#E6E4E1 0 12px,#F0EEEB 12px 24px);display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:11px;color:#6B6B6B"></div>
         <div style="padding:18px 20px 22px"><span style="font-size:11px;font-weight:700;color:#E8362D;letter-spacing:.08em">{{ m.sub }}</span><h3 style="margin:4px 0 10px;font-size:20px;font-weight:800">{{ m.t }}</h3><ul style="margin:0;padding-left:18px;font-size:13px;color:#4A4A4A;line-height:1.7"><sc-for list="{{ m.pts }}" as="pt" hint-placeholder-count="3"><li>{{ pt }}</li></sc-for></ul></div>
       </div>
     </sc-for>
@@ -580,7 +605,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
   <p style="margin:0 0 28px;color:#4A4A4A">Screens don't do them justice — the real Raw Brushed Aluminum looks and feels far more premium than any render.</p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
     <sc-for list="{{ finishCards }}" as="f" hint-placeholder-count="4">
-      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:20px;overflow:hidden"><div style="aspect-ratio:4/3;background:{{ f.bg }};display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">{{ f.ph }}</div><div style="padding:18px"><span style="font-size:11px;font-weight:700;color:#E8362D;letter-spacing:.08em">{{ f.k }}</span><h3 style="margin:4px 0 8px;font-size:18px;font-weight:800">{{ f.t }}</h3><p style="margin:0 0 10px;font-size:13px;color:#4A4A4A;line-height:1.55">{{ f.d }}</p><ul style="margin:0;padding-left:18px;font-size:12.5px;color:#4A4A4A;line-height:1.7"><sc-for list="{{ f.pts }}" as="pt" hint-placeholder-count="3"><li>{{ pt }}</li></sc-for></ul></div></div>
+      <div style="background:#fff;border:1px solid #E8E4DF;border-radius:20px;overflow:hidden"><div style="aspect-ratio:4/3;background:{{ f.bg }};display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div><div style="padding:18px"><span style="font-size:11px;font-weight:700;color:#E8362D;letter-spacing:.08em">{{ f.k }}</span><h3 style="margin:4px 0 8px;font-size:18px;font-weight:800">{{ f.t }}</h3><p style="margin:0 0 10px;font-size:13px;color:#4A4A4A;line-height:1.55">{{ f.d }}</p><ul style="margin:0;padding-left:18px;font-size:12.5px;color:#4A4A4A;line-height:1.7"><sc-for list="{{ f.pts }}" as="pt" hint-placeholder-count="3"><li>{{ pt }}</li></sc-for></ul></div></div>
     </sc-for>
   </div>
   <p style="margin:28px 0 0;padding:18px;background:#fff;border:1px solid #E8E4DF;border-radius:16px;font-size:14px;color:#4A4A4A"><strong style="color:#141414">Not sure which to choose?</strong> Glossy for vibrant, high-impact art. Brushed aluminum for a modern, industrial, metallic look.</p>
@@ -626,6 +651,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
 <div data-screen-label="Search" style="max-width:1280px;margin:0 auto;padding:48px 20px 72px">
   <h1 style="margin:0 0 8px;font-size:36px;font-weight:800;letter-spacing:-.02em">Search</h1>
+  <form role="search" onSubmit="{{ submitSearch }}" style="display:flex;gap:8px;max-width:520px;margin:0 0 14px"><input value="{{ q }}" onChange="{{ setQ }}" type="search" aria-label="Search products" placeholder="Search products and collections" style="flex:1;min-width:0;border:1px solid #E8E4DF;border-radius:999px;padding:12px 16px;font-size:14px;background:#fff"><button type="submit" style="border:0;border-radius:999px;padding:12px 20px;font-weight:700;font-size:14px;color:#fff;background:#141414">Search</button></form>
   <p style="margin:0 0 24px;color:#4A4A4A">{{ searchSummary }}</p>
   <sc-if value="{{ searchEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:32px;border:1px dashed #C9C2BA;border-radius:18px;text-align:center;color:#4A4A4A">Nothing matched your search. <a href="#/product/classic" style="font-weight:700">Start a custom print →</a></div></sc-if>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,280px));gap:18px">
@@ -642,7 +668,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <!-- ================= CHECKOUT ================= -->
 <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
 <sc-if value="{{ checkoutEmpty }}" hint-placeholder-val="{{ false }}"><div style="max-width:560px;margin:0 auto;padding:72px 20px;text-align:center"><h1 style="margin:0 0 10px;font-size:32px;font-weight:800">Your cart is empty</h1><p style="margin:0 0 22px;color:#4A4A4A">Create a custom print first — checkout opens once something is in your cart.</p><a href="#/product/classic" style="display:inline-block;background:#141414;color:#fff;border-radius:999px;padding:15px 28px;font-weight:700">Start creating</a></div></sc-if>
-<sc-if value="{{ orderPlaced }}" hint-placeholder-val="{{ false }}"><div style="max-width:560px;margin:0 auto;padding:72px 20px;text-align:center"><span style="display:inline-flex;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;align-items:center;justify-content:center;font-size:28px;font-weight:800;margin-bottom:14px">✓</span><h1 style="margin:0 0 10px;font-size:30px;font-weight:800">Order {{ lastOrderId }} placed</h1><p style="margin:0 0 22px;color:#4A4A4A;line-height:1.6">Thank you! We'll email a preview for approval before production. You can follow the status on the Track Your Order page.</p><a href="#/track" style="display:inline-block;background:#141414;color:#fff;border-radius:999px;padding:15px 28px;font-weight:700">Track your order</a></div></sc-if>
+<sc-if value="{{ orderPlaced }}" hint-placeholder-val="{{ false }}"><div style="max-width:560px;margin:0 auto;padding:72px 20px;text-align:center"><span style="display:inline-flex;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;align-items:center;justify-content:center;font-size:28px;font-weight:800;margin-bottom:14px">✓</span><h1 style="margin:0 0 10px;font-size:30px;font-weight:800">Order {{ lastOrderId }} received</h1><p style="margin:0 0 22px;color:#4A4A4A;line-height:1.6">Thank you! Nothing has been charged yet. We'll email you a preview for approval together with a secure payment link — production starts once you approve and pay.</p><a href="#/track" style="display:inline-block;background:#141414;color:#fff;border-radius:999px;padding:15px 28px;font-weight:700">Track your order</a></div></sc-if>
 <sc-if value="{{ checkoutForm }}" hint-placeholder-val="{{ true }}">
 <div data-screen-label="Checkout" style="max-width:1080px;margin:0 auto;padding:48px 20px 72px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:start">
   <form onSubmit="{{ placeOrder }}" style="display:grid;gap:12px">
@@ -653,12 +679,15 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><input aria-label="City" placeholder="City" required style="border:1px solid #E8E4DF;border-radius:12px;padding:13px 14px;font-size:14px;background:#fff"><input aria-label="ZIP" placeholder="ZIP" required style="border:1px solid #E8E4DF;border-radius:12px;padding:13px 14px;font-size:14px;background:#fff"><input aria-label="Country" placeholder="Country" required style="border:1px solid #E8E4DF;border-radius:12px;padding:13px 14px;font-size:14px;background:#fff"></div>
     <p style="margin:8px 0 0;font-size:12px;font-weight:700">Shipping</p>
     <div style="display:grid;gap:8px"><label style="display:flex;justify-content:space-between;gap:10px;cursor:pointer;background:#fff;border:1px solid #E8E4DF;border-radius:12px;padding:12px 14px;font-size:13px"><span><input type="radio" name="ship" checked="{{ shipStd }}" onChange="{{ pickStd }}"> Standard · 10–14 business days</span><strong>$9.90</strong></label><label style="display:flex;justify-content:space-between;gap:10px;cursor:pointer;background:#fff;border:1px solid #E8E4DF;border-radius:12px;padding:12px 14px;font-size:13px"><span><input type="radio" name="ship" checked="{{ shipExp }}" onChange="{{ pickExp }}"> Expedited · 5–9 business days</span><strong>$24.90</strong></label></div>
-    <input aria-label="Card number" placeholder="Card number" required style="border:1px solid #E8E4DF;border-radius:12px;padding:13px 14px;font-size:14px;background:#fff;margin-top:8px">
-    <button type="submit" style="border:0;border-radius:999px;padding:15px;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(135deg,#F7B21B,#F26A1B,#E8362D)">Pay ${{ checkoutTotal }}</button>
+    <p style="margin:8px 0 0;font-size:12px;font-weight:700">Discount code</p>
+    <div style="display:flex;gap:8px"><input value="{{ codeDraft }}" onChange="{{ setCodeDraft }}" aria-label="Discount code" placeholder="e.g. WELCOME15" style="border:1px solid #E8E4DF;border-radius:12px;padding:13px 14px;font-size:14px;background:#fff;flex:1;text-transform:uppercase"><button type="button" onClick="{{ applyCode }}" style="border:1.5px solid #141414;background:#fff;border-radius:12px;padding:0 18px;font-weight:700;font-size:13px">Apply</button></div>
+    <sc-if value="{{ codeMsg }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin:0;font-size:12.5px;font-weight:600;color:{{ codeMsgColor }}">{{ codeMsg }}</p></sc-if>
+    <p style="margin:8px 0 0;padding:12px 14px;border-radius:12px;background:#F7F3EE;font-size:12.5px;color:#4A4A4A;line-height:1.55"><strong style="color:#141414">No payment now.</strong> We review your photo first, then email a preview and a secure payment link. Production starts after you approve.</p>
+    <button type="submit" style="border:0;border-radius:999px;padding:15px;font-weight:700;font-size:14px;color:#fff;background:#141414">Place order · ${{ checkoutTotal }}</button>
   </form>
   <div style="background:#fff;border:1px solid #E8E4DF;border-radius:20px;padding:22px">
     <h2 style="margin:0 0 14px;font-size:18px;font-weight:800">Order summary</h2>
-    <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="2"><div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #EFEBE6"><div style="width:48px;height:48px;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(135deg,#E6E4E1 0 8px,#F0EEEB 8px 16px);flex-shrink:0"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img sc-camel-src="{{ c.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if></div><div style="flex:1;font-size:13px"><strong>{{ c.name }}</strong><span style="display:block;color:#6B6B6B;font-size:11.5px">{{ c.spec }} × {{ c.qty }}</span></div><strong style="font-size:13px">${{ c.line }}</strong></div></sc-for>
+    <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="2"><div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #EFEBE6"><div style="width:48px;height:48px;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(135deg,#E6E4E1 0 8px,#F0EEEB 8px 16px);flex-shrink:0"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img sc-camel-src="{{ c.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if></div><div style="flex:1;font-size:13px"><strong>{{ c.name }}</strong><span style="display:block;color:#6B6B6B;font-size:11.5px">{{ c.spec }} × {{ c.qty }}</span><sc-if value="{{ c.note }}" hint-placeholder-val="{{ false }}"><span style="display:block;color:#B84A0E;font-size:11.5px">Note: {{ c.note }}</span></sc-if></div><strong style="font-size:13px">${{ c.line }}</strong></div></sc-for>
     <div style="display:grid;gap:6px;margin-top:14px;font-size:13.5px"><div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${{ cartSubtotal }}</span></div><div style="display:flex;justify-content:space-between;color:#E8362D;font-weight:700"><span>{{ cartDiscLabel }}</span><span>−${{ cartDisc }}</span></div><div style="display:flex;justify-content:space-between"><span>Shipping</span><span>${{ shipCost }}</span></div><div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:6px"><span>Total</span><span>${{ checkoutTotal }}</span></div></div>
   </div>
 </div>
@@ -670,10 +699,10 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <!-- FOOTER -->
 <footer style="background:#141414;color:#fff;padding:56px 20px 28px;margin-top:auto">
   <div style="max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px">
-    <div style="grid-column:span 1"><a href="#/" style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:20px"><img src="assets/logo-mark.png" alt="" style="height:26px;width:auto">Metavista</a><p style="margin:14px 0 0;font-size:13px;color:#B9B4AE;line-height:1.6;max-width:260px">Custom HD metal prints from your photos, anime and game art. Built to last a lifetime.</p></div>
+    <div style="grid-column:span 1"><a href="#/" style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:20px"><img src="assets/logo-mark-2x.png" alt="" width="30" height="26" style="height:26px;width:auto">Metavista</a><p style="margin:14px 0 0;font-size:13px;color:#B9B4AE;line-height:1.6;max-width:260px">Custom HD metal prints from your photos, anime and game art. Built to last a lifetime.</p></div>
     <sc-if value="{{ footGuides }}" hint-placeholder-val="{{ true }}"><div><strong style="font-size:12px;letter-spacing:.12em;color:#B9B4AE">GUIDES</strong><div style="display:grid;gap:8px;margin-top:14px;font-size:14px"><sc-if value="{{ on.foot_faq }}" hint-placeholder-val="{{ true }}"><a href="#/faq" style="color:#fff">FAQs</a></sc-if><sc-if value="{{ on.foot_blog }}" hint-placeholder-val="{{ true }}"><a href="#/blog" style="color:#fff">Blogs</a></sc-if><sc-if value="{{ on.foot_sizes }}" hint-placeholder-val="{{ true }}"><a href="#/sizes" style="color:#fff">Size Guide</a></sc-if><sc-if value="{{ on.foot_howto }}" hint-placeholder-val="{{ true }}"><a href="#/howto" style="color:#fff">How To Mount</a></sc-if><sc-if value="{{ on.foot_finishes }}" hint-placeholder-val="{{ true }}"><a href="#/finishes" style="color:#fff">Compare Finishes</a></sc-if></div></div></sc-if>
     <sc-if value="{{ on.foot_policy }}" hint-placeholder-val="{{ true }}"><div><strong style="font-size:12px;letter-spacing:.12em;color:#B9B4AE">POLICY</strong><div style="display:grid;gap:8px;margin-top:14px;font-size:14px"><a href="#/policy/privacy" style="color:#fff">Privacy Policy</a><a href="#/policy/refund" style="color:#fff">Refund Policy</a><a href="#/policy/shipping" style="color:#fff">Shipping Policy</a><a href="#/policy/terms" style="color:#fff">Terms of Service</a></div></div></sc-if>
-    <sc-if value="{{ on.foot_contact }}" hint-placeholder-val="{{ true }}"><div><strong style="font-size:12px;letter-spacing:.12em;color:#B9B4AE">GET IN TOUCH</strong><div style="display:grid;gap:8px;margin-top:14px;font-size:14px;color:#fff"><span>+1 (000) 000-0000</span><span>support@metavista.com</span><span style="color:#B9B4AE;font-size:13px">Address line · City, State</span></div></div></sc-if>
+    <sc-if value="{{ on.foot_contact }}" hint-placeholder-val="{{ true }}"><div><strong style="font-size:12px;letter-spacing:.12em;color:#B9B4AE">GET IN TOUCH</strong><div style="display:grid;gap:8px;margin-top:14px;font-size:14px;color:#fff"><a href="mailto:support@metavista.com" style="color:#fff">support@metavista.com</a><span style="color:#B9B4AE;font-size:13px">Replies within 24 hours, Mon–Fri</span></div></div></sc-if>
     <sc-if value="{{ footFollow }}" hint-placeholder-val="{{ true }}"><div><sc-if value="{{ on.foot_social }}" hint-placeholder-val="{{ true }}"><strong style="font-size:12px;letter-spacing:.12em;color:#B9B4AE">FOLLOW US</strong><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap"><a href="#/" style="border:1px solid #3A3A3A;border-radius:999px;padding:7px 12px;font-size:12px;color:#fff">Facebook</a><a href="#/" style="border:1px solid #3A3A3A;border-radius:999px;padding:7px 12px;font-size:12px;color:#fff">Pinterest</a><a href="#/" style="border:1px solid #3A3A3A;border-radius:999px;padding:7px 12px;font-size:12px;color:#fff">Instagram</a><a href="#/" style="border:1px solid #3A3A3A;border-radius:999px;padding:7px 12px;font-size:12px;color:#fff">TikTok</a></div></sc-if><sc-if value="{{ on.foot_newsletter }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openNews }}" style="margin-top:16px;border:0;border-radius:999px;padding:10px 16px;font-weight:700;font-size:12.5px;color:#fff;background:linear-gradient(135deg,#F7B21B,#F26A1B,#E8362D)">Get 15% off · Newsletter</button></sc-if></div></sc-if>
   </div>
   <p style="max-width:1280px;margin:40px auto 0;font-size:12px;color:#8E8E8E;border-top:1px solid #2C2C2C;padding-top:20px">© 2026 Metavista · Custom Metal Art Prints & HD Metal Prints</p>
@@ -682,18 +711,18 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <!-- CART DRAWER -->
 <sc-if value="{{ cartOpen }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ closeCart }}" style="position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:60"></div>
-  <aside style="position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:61;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(20,20,20,.2);animation:mv-in .2s ease">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid #E8E4DF"><h2 style="margin:0;font-size:20px;font-weight:800">Your cart · {{ cartCount }}</h2><button onClick="{{ closeCart }}" style="background:none;border:0;font-size:22px">×</button></div>
+  <aside role="dialog" aria-modal="true" aria-label="Your cart" data-trap="1" tabindex="-1" style="outline:0;position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;z-index:61;display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(20,20,20,.2);animation:mv-in .2s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid #E8E4DF"><h2 style="margin:0;font-size:20px;font-weight:800">Your cart · {{ cartCount }}</h2><button onClick="{{ closeCart }}" aria-label="Close cart" class="mv-icon-btn" style="background:none;border:0;font-size:24px;margin:-8px -10px -8px 0">×</button></div>
     <div style="padding:12px 22px;background:#FFF4E5;font-size:12.5px;color:#B84A0E;font-weight:600">{{ cartTierHint }}</div>
     <div style="flex:1;overflow:auto;padding:10px 22px">
       <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ true }}"><p style="text-align:center;color:#6B6B6B;padding:40px 0">Your cart is empty.<br><a href="#/product/classic" onClick="{{ closeCart }}" style="font-weight:700">Start creating →</a></p></sc-if>
       <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="0">
         <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #EFEBE6">
           <div style="width:64px;height:64px;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#E6E4E1 0 8px,#F0EEEB 8px 16px);flex-shrink:0"><sc-if value="{{ c.img }}" hint-placeholder-val="{{ false }}"><img sc-camel-src="{{ c.img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></sc-if></div>
-          <div style="flex:1;min-width:0"><strong style="font-size:13.5px;display:block">{{ c.name }}</strong><span style="font-size:12px;color:#6B6B6B;display:block">{{ c.spec }}</span>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div style="display:inline-flex;align-items:center;border:1px solid #E8E4DF;border-radius:999px"><button onClick="{{ c.dec }}" style="border:0;background:none;padding:4px 10px">−</button><span style="font-size:13px;font-weight:700">{{ c.qty }}</span><button onClick="{{ c.inc }}" style="border:0;background:none;padding:4px 10px">+</button></div><strong style="font-size:13.5px">${{ c.line }}</strong></div>
+          <div style="flex:1;min-width:0"><strong style="font-size:13.5px;display:block">{{ c.name }}</strong><span style="font-size:12px;color:#6B6B6B;display:block">{{ c.spec }}</span><sc-if value="{{ c.note }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#B84A0E;display:block;margin-top:2px">Note: {{ c.note }}</span></sc-if>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div style="display:inline-flex;align-items:center;border:1px solid #E8E4DF;border-radius:999px"><button onClick="{{ c.dec }}" aria-label="Decrease quantity" style="border:0;background:none;min-width:40px;min-height:36px;font-size:16px">−</button><span aria-live="polite" style="font-size:13px;font-weight:700">{{ c.qty }}</span><button onClick="{{ c.inc }}" aria-label="Increase quantity" style="border:0;background:none;min-width:40px;min-height:36px;font-size:16px">+</button></div><strong style="font-size:13.5px">${{ c.line }}</strong></div>
           </div>
-          <button onClick="{{ c.remove }}" style="border:0;background:none;color:#6B6B6B;font-size:16px;align-self:flex-start">×</button>
+          <button onClick="{{ c.remove }}" aria-label="Remove item" class="mv-icon-btn" style="border:0;background:none;color:#6B6B6B;font-size:18px;align-self:flex-start;margin:-8px -10px 0 0">×</button>
         </div>
       </sc-for>
     </div>
@@ -709,7 +738,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <!-- ================= CREATE-YOUR-PRINT WIZARD (popup) ================= -->
 <sc-if value="{{ wizOpen }}" hint-placeholder-val="{{ false }}">
 <div class="wz-overlay" style="position:fixed;inset:0;background:rgba(20,20,20,.62);z-index:65;display:flex;align-items:center;justify-content:center;padding:20px;animation:mv-fade .2s ease">
-  <div class="wz-panel" role="dialog" aria-modal="true" aria-label="Create your metal print" style="position:relative;background:#fff;border-radius:22px;width:min(1126px,100%);height:min(780px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);animation:mv-pop .28s cubic-bezier(.2,.9,.3,1.2)">
+  <div class="wz-panel" role="dialog" aria-modal="true" aria-label="Create your metal print" data-trap="1" tabindex="-1" style="outline:0;position:relative;background:#fff;border-radius:22px;width:min(1126px,100%);height:min(780px,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);animation:mv-pop .28s cubic-bezier(.2,.9,.3,1.2)">
     <div style="display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #EFEBE6;flex-shrink:0">
       <button onClick="{{ czBack }}" aria-label="Back" style="{{ wzBackStyle }}">←</button>
       <div style="display:flex;align-items:center;justify-content:center;gap:12px;min-width:0">
@@ -850,6 +879,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
               <div role="group" aria-label="Zoom" style="display:inline-flex;background:#F1EEEA;border-radius:999px;padding:3px"><sc-for list="{{ cmpZooms }}" as="z" hint-placeholder-count="3"><button onClick="{{ z.pick }}" aria-pressed="{{ z.on }}" style="border:0;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;background:{{ z.bg }}">{{ z.label }}</button></sc-for></div>
             </div>
             <div style="text-align:center;margin-top:6px"><button onClick="{{ openFullEnh }}" style="background:none;border:0;padding:6px;font-size:12.5px;font-weight:700;color:#4A4A4A;text-decoration:underline">⤢ View full enhanced image</button></div>
+            <sc-if value="{{ on.shd_consent }}" hint-placeholder-val="{{ true }}"><p style="margin:12px 0 0;padding:10px 12px;border-left:3px solid #141414;background:#F7F3EE;border-radius:0 10px 10px 0;font-size:12px;color:#4A4A4A;line-height:1.55"><strong style="color:#141414">Please note:</strong> printed colors and micro-details may vary slightly from your screen. Choosing the enhanced image approves it for production.</p></sc-if>
             <div style="display:grid;gap:10px;margin-top:10px">
               <button onClick="{{ useEnhanced }}" style="border:0;border-radius:14px;padding:15px;font-weight:800;font-size:14px;letter-spacing:.03em;color:#fff;background:#141414">✓ USE ENHANCED IMAGE <span style="margin-left:6px;font-size:10px;letter-spacing:.08em;background:rgba(255,255,255,.18);padding:3px 7px;border-radius:6px">RECOMMENDED</span></button>
               <button onClick="{{ useOriginal }}" style="border:0;border-radius:14px;padding:15px;font-weight:800;font-size:14px;letter-spacing:.03em;color:#fff;background:#3E4A5A">KEEP ORIGINAL IMAGE</button>
@@ -972,8 +1002,8 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 <!-- MODALS -->
 <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
   <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(20,20,20,.55);z-index:70;display:flex;align-items:center;justify-content:center;padding:20px">
-    <div onClick="{{ stop }}" style="background:#fff;border-radius:24px;max-width:{{ modalWidth }}px;width:100%;max-height:90vh;overflow:auto;padding:28px;position:relative;animation:mv-in .2s ease">
-      <button onClick="{{ closeModal }}" style="position:absolute;top:14px;right:16px;background:none;border:0;font-size:24px;color:#6B6B6B">×</button>
+    <div onClick="{{ stop }}" role="dialog" aria-modal="true" data-trap="1" tabindex="-1" style="outline:0;background:#fff;border-radius:24px;max-width:{{ modalWidth }}px;width:100%;max-height:90vh;overflow:auto;padding:28px;position:relative;animation:mv-in .2s ease">
+      <button onClick="{{ closeModal }}" aria-label="Close" class="mv-icon-btn" style="position:absolute;top:8px;right:8px;background:none;border:0;font-size:24px;color:#6B6B6B">×</button>
 
       <sc-if value="{{ modalSizes }}" hint-placeholder-val="{{ false }}">
         <h2 style="margin:0 0 6px;font-size:26px;font-weight:800">Sizes & Pricing</h2>
@@ -1014,12 +1044,6 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
         </div>
       </sc-if>
 
-      <sc-if value="{{ modalConsent }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px"><span style="display:inline-flex;width:40px;height:40px;border-radius:12px;background:#F1EEEA;align-items:center;justify-content:center;font-size:18px">🛡</span><h2 style="margin:0;font-size:20px;font-weight:800">Image Enhancement Quality Notice</h2></div>
-        <p style="margin:0 0 12px;font-size:13.5px;color:#4A4A4A;line-height:1.6">Our S.HD™ engine sharpens fine details, balances contrast and optimizes clarity specifically for high-definition metal prints.</p>
-        <p style="margin:0 0 18px;padding:10px 12px;border-left:3px solid #141414;background:#F7F3EE;border-radius:0 10px 10px 0;font-size:12.5px;color:#4A4A4A;line-height:1.55"><strong style="color:#141414">Please note:</strong> final printed colors, tonal depth and micro-details may vary slightly from your screen preview. By proceeding, you approve this enhanced version for production.</p>
-        <div style="display:grid;gap:10px"><button onClick="{{ confirmEnhanced }}" style="border:0;border-radius:999px;padding:14px;font-weight:700;font-size:14px;color:#fff;background:#141414">✓ Confirm & Use Enhanced Image</button><button onClick="{{ resetUploadNow }}" style="border:1.5px solid #E8E4DF;background:#fff;border-radius:999px;padding:13px;font-weight:700;font-size:14px">↑ Upload Another Photo</button></div>
-      </sc-if>
 
       <sc-if value="{{ modalQDemo }}" hint-placeholder-val="{{ false }}">
         <span style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 10px;border-radius:999px;background:#F1EEEA;margin-bottom:10px">METAVISTA S.HD™ TECHNOLOGY</span>
@@ -1071,7 +1095,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 
       <sc-if value="{{ modalNews }}" hint-placeholder-val="{{ false }}">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;align-items:center">
-          <div style="aspect-ratio:4/5;border-radius:16px;background:repeating-linear-gradient(135deg,#F3E3D6 0 12px,#F9EEE5 12px 24px);display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">newsletter visual</div>
+          <div style="aspect-ratio:4/5;border-radius:16px;background:repeating-linear-gradient(135deg,#F3E3D6 0 12px,#F9EEE5 12px 24px);display:flex;align-items:flex-end;padding:12px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B"></div>
           <div>
             <sc-if value="{{ notSubscribed }}" hint-placeholder-val="{{ true }}">
               <h2 style="margin:0 0 8px;font-size:26px;font-weight:800;letter-spacing:-.02em">Bring Your Memories to Life</h2>
@@ -1098,6 +1122,7 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 
 </div>
 </x-dc>
+<div class="mv-skel" aria-hidden="true"><img src="./assets/logo-mark-2x.png" alt=""></div>
 <script type="text/x-dc" data-dc-script data-props="{&quot;promoTiers&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;10 / 25 / 35&quot;,&quot;options&quot;:[&quot;10 / 25 / 35&quot;,&quot;15 / 25 / 40&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Store&quot;},&quot;newsletterDelay&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:6,&quot;min&quot;:0,&quot;max&quot;:30,&quot;unit&quot;:&quot;s&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Store&quot;}}">
 const FEATURES = [
   ['Global','promoBar','Promo bar (top marquee)',false],
@@ -1131,7 +1156,7 @@ const FEATURES = [
   ['Footer','foot_finishes','Compare Finishes',false],
   ['Footer','foot_policy','Policy column',true],
   ['Footer','foot_contact','Get in touch column',true],
-  ['Footer','foot_social','Follow us column',true],
+  ['Footer','foot_social','Follow us column',false],
   ['Footer','foot_newsletter','Newsletter button',false],
   ['Photo tools','photo_autoRatio','Auto-pick best ratio on upload',true],
   ['Photo tools','photo_rotate','Rotate button',true],
@@ -1239,10 +1264,12 @@ const PRESETS = { flower:[6,7,11,12,13,16,17], heart:[1,3,6,7,8,11,12,17], lands
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const loadImg = src => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('image load failed')); im.src = src; });
 const canvasOf = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
-const toBlobUrl = (canvas, q = 0.92) => new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/jpeg', q));
+const toBlobUrl = (canvas, q = 0.92) => new Promise((res, rej) => canvas.toBlob(b => b ? res(URL.createObjectURL(b)) : rej(new Error('canvas.toBlob failed')), 'image/jpeg', q));
+const revoke = (...urls) => urls.forEach(u => { if (typeof u === 'string' && u.startsWith('blob:')) URL.revokeObjectURL(u); });
 // Browsers apply EXIF orientation when decoding <img>, so drawing it onto a canvas bakes the correct rotation in.
-const drawScaled = (img, maxLong) => { const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, maxLong / Math.max(w, h)); const c = canvasOf(w * s, h * s); const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height); return c; };
-const grayOf = (img, maxLong) => { const c = drawScaled(img, maxLong); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; const g = new Float32Array(c.width * c.height); for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = d[i] * .299 + d[i + 1] * .587 + d[i + 2] * .114; return { g, w: c.width, h: c.height, d }; };
+// read = the pixels will be read back (getImageData): keep that canvas in CPU memory, GPU readback is slow
+const drawScaled = (img, maxLong, read = false) => { const w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, maxLong / Math.max(w, h)); const c = canvasOf(w * s, h * s); const x = c.getContext('2d', read ? { willReadFrequently:true } : undefined); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height); return c; };
+const grayOf = (img, maxLong) => { const c = drawScaled(img, maxLong, true); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; const g = new Float32Array(c.width * c.height); for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = d[i] * .299 + d[i + 1] * .587 + d[i + 2] * .114; return { g, w: c.width, h: c.height, d }; };
 // Sharpness score: variance of the Laplacian on a 512px grayscale copy (higher = sharper).
 const laplacianVar = img => { const { g, w, h } = grayOf(img, 512); let n = 0, sum = 0, sq = 0; for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) { const i = y * w + x; const v = 4 * g[i] - g[i - 1] - g[i + 1] - g[i - w] - g[i + w]; sum += v; sq += v * v; n++; } const m = sum / n; return Math.round(sq / n - m * m); };
 // Smart Focus: centre of "interest" = edge energy, boosted on skin-like tones (faces).
@@ -1250,15 +1277,27 @@ const saliencyCenter = img => { const { g, w, h, d } = grayOf(img, 96); let sx =
 const rotateImg = async img => { const c = canvasOf(img.naturalHeight, img.naturalWidth); const x = c.getContext('2d'); x.translate(c.width, 0); x.rotate(Math.PI / 2); x.drawImage(img, 0, 0); const url = await toBlobUrl(c, .93); return { url, img: await loadImg(url) }; };
 const cropImg = async (img, rect, baseW, maxLong = 1400) => { const k = img.naturalWidth / baseW; const sw = rect.cw * k, sh = rect.ch * k, s = Math.min(1, maxLong / Math.max(sw, sh)); const c = canvasOf(sw * s, sh * s); const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, rect.x0 * k, rect.y0 * k, sw, sh, 0, 0, c.width, c.height); return toBlobUrl(c, .92); };
 // In-browser S.HD fallback: high-quality upscale (up to 2× / 2000px) → unsharp mask → gentle contrast & colour lift.
+// The pixel work runs in a Web Worker so cropping stays smooth; byte buffers keep it ~40 MB instead of ~100 MB.
+function enhanceCore(p, W, H, prog) {
+  const src = new Uint8ClampedArray(p), tmp = new Uint8ClampedArray(W * H * 3), blur = new Uint8ClampedArray(W * H * 3), R = 2, D = 2 * R + 1;
+  for (let y = 0; y < H; y++) { const row = y * W; for (let x = 0; x < W; x++) for (let ch = 0; ch < 3; ch++) { let a = 0; for (let k = -R; k <= R; k++) { const xk = x + k < 0 ? 0 : x + k >= W ? W - 1 : x + k; a += src[(row + xk) * 4 + ch]; } tmp[(row + x) * 3 + ch] = a / D; } if (!(y % 64)) prog(Math.round(y / H * 35)); }
+  for (let y = 0; y < H; y++) { for (let x = 0; x < W; x++) for (let ch = 0; ch < 3; ch++) { let a = 0; for (let k = -R; k <= R; k++) { const yk = y + k < 0 ? 0 : y + k >= H ? H - 1 : y + k; a += tmp[(yk * W + x) * 3 + ch]; } blur[(y * W + x) * 3 + ch] = a / D; } if (!(y % 64)) prog(35 + Math.round(y / H * 35)); }
+  for (let y = 0; y < H; y++) { for (let x = 0; x < W; x++) { const i = y * W + x, q = i * 4; let r = src[q], g = src[q + 1], b = src[q + 2]; r += 0.85 * (r - blur[i * 3]); g += 0.85 * (g - blur[i * 3 + 1]); b += 0.85 * (b - blur[i * 3 + 2]); r = (r - 128) * 1.05 + 128; g = (g - 128) * 1.05 + 128; b = (b - 128) * 1.05 + 128; const L = r * .299 + g * .587 + b * .114; p[q] = L + (r - L) * 1.08; p[q + 1] = L + (g - L) * 1.08; p[q + 2] = L + (b - L) * 1.08; } if (!(y % 64)) prog(70 + Math.round(y / H * 28)); }
+}
+let _enhWorkerUrl = null;
+const runEnhance = (id, onProg) => new Promise((res, rej) => {
+  let w = null;
+  try { _enhWorkerUrl = _enhWorkerUrl || URL.createObjectURL(new Blob([enhanceCore.toString() + '\nonmessage = e => { const { W, H, buf } = e.data, p = new Uint8ClampedArray(buf); enhanceCore(p, W, H, n => postMessage({ prog:n })); postMessage({ buf }, [buf]); };'], { type:'text/javascript' })); w = new Worker(_enhWorkerUrl); } catch (e) { w = null; }
+  if (!w) { try { enhanceCore(id.data, id.width, id.height, onProg); res(id); } catch (e) { rej(e); } return; } // no Worker support: run inline
+  w.onmessage = e => { if (e.data.prog != null) { onProg(e.data.prog); return; } w.terminate(); res(new ImageData(new Uint8ClampedArray(e.data.buf), id.width, id.height)); };
+  w.onerror = e => { w.terminate(); rej(new Error('enhance worker failed: ' + (e.message || ''))); };
+  w.postMessage({ W:id.width, H:id.height, buf:id.data.buffer }, [id.data.buffer]);
+});
 const localEnhance = async (img, onProg) => {
   const w = img.naturalWidth, h = img.naturalHeight, long = Math.max(w, h), target = Math.min(2000, Math.max(long, long * 2)), s = target / long;
-  const c = canvasOf(w * s, h * s), x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
-  const W = c.width, H = c.height, id = x.getImageData(0, 0, W, H), p = id.data, src = new Uint8ClampedArray(p), tmp = new Float32Array(W * H * 3), blur = new Float32Array(W * H * 3);
-  const R = 2, step = 60;
-  for (let y0 = 0; y0 < H; y0 += step) { for (let y = y0; y < Math.min(H, y0 + step); y++) for (let xx = 0; xx < W; xx++) for (let ch = 0; ch < 3; ch++) { let a = 0, n = 0; for (let k = -R; k <= R; k++) { const xk = Math.min(W - 1, Math.max(0, xx + k)); a += src[(y * W + xk) * 4 + ch]; n++; } tmp[(y * W + xx) * 3 + ch] = a / n; } onProg(Math.round(y0 / H * 35)); await sleep(0); }
-  for (let y0 = 0; y0 < H; y0 += step) { for (let y = y0; y < Math.min(H, y0 + step); y++) for (let xx = 0; xx < W; xx++) for (let ch = 0; ch < 3; ch++) { let a = 0, n = 0; for (let k = -R; k <= R; k++) { const yk = Math.min(H - 1, Math.max(0, y + k)); a += tmp[(yk * W + xx) * 3 + ch]; n++; } blur[(y * W + xx) * 3 + ch] = a / n; } onProg(35 + Math.round(y0 / H * 35)); await sleep(0); }
-  for (let y0 = 0; y0 < H; y0 += step) { for (let y = y0; y < Math.min(H, y0 + step); y++) for (let xx = 0; xx < W; xx++) { const i = y * W + xx, q = i * 4; let r = src[q], g = src[q + 1], b = src[q + 2]; r += 0.85 * (r - blur[i * 3]); g += 0.85 * (g - blur[i * 3 + 1]); b += 0.85 * (b - blur[i * 3 + 2]); r = (r - 128) * 1.05 + 128; g = (g - 128) * 1.05 + 128; b = (b - 128) * 1.05 + 128; const L = r * .299 + g * .587 + b * .114; p[q] = L + (r - L) * 1.08; p[q + 1] = L + (g - L) * 1.08; p[q + 2] = L + (b - L) * 1.08; } onProg(70 + Math.round(y0 / H * 28)); await sleep(0); }
-  x.putImageData(id, 0, 0); onProg(100); return toBlobUrl(c, .93);
+  const c = canvasOf(w * s, h * s), x = c.getContext('2d', { willReadFrequently:true }); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
+  const out = await runEnhance(x.getImageData(0, 0, c.width, c.height), onProg);
+  x.putImageData(out, 0, 0); onProg(100); return toBlobUrl(c, .93);
 };
 // Optional server S.HD: POST multipart "file" → image bytes, or JSON { url } / { image }.
 const serverEnhance = async (endpoint, blob) => {
@@ -1501,6 +1540,9 @@ class PrintViewer {
 
 const makeThumb = async url => { if (!url) return ''; const im = await loadImg(url); const c = drawScaled(im, 180); return c.toDataURL('image/jpeg', .8); };
 
+const CODES = { WELCOME15:0.15 }; // newsletter code; never stacks with the bundle discount (the bigger one wins)
+const loadOrders = () => { try { return JSON.parse(localStorage.getItem('mv_orders') || '[]'); } catch (e) { return []; } };
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select,textarea,[tabindex]:not([tabindex="-1"])';
 const KNOWN_PAGES = ['home','product','collection','wall','about','mount','track','faq','sizes','howto','finishes','blog','policy','login','register','search','checkout'];
 class Component extends DCLogic {
   constructor(p) {
@@ -1508,29 +1550,60 @@ class Component extends DCLogic {
     this._features = loadFeatures();
     let cart = []; try { cart = JSON.parse(localStorage.getItem('mv_cart') || '[]'); } catch (e) {}
     this.state = { route: this.parseHash(), cart, cartOpen:false, menu:null, tab:'what', faq:-1, q:'', modal:null, sizeTab:'photo', shd:50, cmp:50, cmpZoom:false,
-      votes:{}, wallFile:'', trackId:'', trackEmail:'', trackResult:false, subscribed:false, copied:false, authDone:false, orderPlaced:false, lastOrderId:'', toast:'', tilt:{x:0,y:0}, cz: this.freshCz(), features: this._features, upErr:'', upBusy:false, dragHot:false, cmpPos:50, cmpZoom:1, cmpPan:{ x:0, y:0 }, qdemoPos:50, qdemoZoom:1, wizOpen:false, three:'idle' };
-    this._gen = 0;
+      votes:{}, wallFile:'', trackId:'', trackEmail:'', trackResult:false, code:'', codeDraft:'', codeMsg:'', codeOk:false, subscribed:false, copied:false, authDone:false, orderPlaced:false, lastOrderId:'', toast:'', tilt:{x:0,y:0}, cz: this.freshCz(), features: this._features, upErr:'', upBusy:false, dragHot:false, cmpPos:50, cmpZoom:1, cmpPan:{ x:0, y:0 }, qdemoPos:50, qdemoZoom:1, wizOpen:false, three:'idle' };
+    this._gen = 0; this._czPid = this.state.route.page === 'product' ? (this.state.route.param || '') : null; this._ptrs = new Map();
   }
   freshCz() { return { step:1, style:'photo', img:'', enh:'', final:'', thumb:'', mode:'crop', cx:.5, cy:.5, iw:0, ih:0, ow:0, oh:0, blur:null, shd:'off', shdProg:0, cropOrig:'', cropEnh:'', useEnh:false, pv:'', r3:{ x:-4, y:-22 }, tip:-1, rotQ:0, smart:false, enhanced:true, progress:0, ratio:'3:4', orient:'portrait', hexTop:'pointy', zoom:1, rot:0, size:'M', finish:'gloss', mount:'standard', qty:1, note:'', hexes:[6,7,11,12,13,16,17] }; }
   parseHash() { const h = (location.hash || '#/').replace(/^#\/?/, ''); const [page, param] = h.split('/'); return { page: page || 'home', param: param || '' }; }
   componentDidMount() {
-    this._onHash = () => { const nr = this.parseHash(), or = this.state.route; if (nr.page === 'product' && (or.page !== 'product' || or.param !== nr.param)) { this._gen++; this._orig = this._enh = null; this.setState({ cz: this.freshCz(), modal:null }); }
-      if (this.state.wizOpen) this.closeWizard();
-      this.setState({ route: nr, cartOpen:false, menu:null, faq:-1, trackResult:false, orderPlaced:false, tilt:{x:0,y:0} }); window.scrollTo(0, 0); };
+    this._onHash = () => { const nr = this.parseHash();
+      // a different product starts a fresh design; coming back to the same one keeps it ("CONTINUE YOUR DESIGN")
+      if (nr.page === 'product' && (nr.param || '') !== this._czPid) { this._gen++; this.freePhoto(); this._orig = this._enh = null; this._czPid = nr.param || ''; this.setState({ cz: this.freshCz(), modal:null }); }
+      if (this.state.wizOpen) this.closeWizard({ nav:true });
+      this.setState({ route: nr, cartOpen:false, menu:null, faq:-1, trackResult:false, orderPlaced:false, tilt:{x:0,y:0}, modal:null }); window.scrollTo(0, 0); };
     window.addEventListener('hashchange', this._onHash);
-    this._onKey = e => { if (e.key !== 'Escape') return; if (this.state.modal) this.setState({ modal:null }); else if (this.state.wizOpen) this.closeWizard(); };
+    // phone/browser Back inside the wizard steps back instead of leaving the page
+    this._onPop = () => { if (this._popSkip) { this._popSkip = false; return; } if (!this.state.wizOpen) return;
+      if (this.state.modal) { this.setState({ modal:null }); history.pushState({ mvWiz:1 }, ''); return; }
+      if (this.stepBack()) history.pushState({ mvWiz:1 }, ''); else this.closeWizard({ nav:true }); };
+    window.addEventListener('popstate', this._onPop);
+    this._onKey = e => {
+      if (e.key === 'Tab') { const box = [...document.querySelectorAll('[data-trap]')].pop(); if (!box) return; const f = [...box.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null); if (!f.length) return;
+        const first = f[0], last = f[f.length - 1]; if (!box.contains(document.activeElement)) { e.preventDefault(); first.focus(); } else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } return; }
+      if (e.key !== 'Escape') return; if (this.state.modal) this.setState({ modal:null }); else if (this.state.wizOpen) this.closeWizard(); else if (this.state.cartOpen) this.setState({ cartOpen:false }); else if (this.state.menu) this.setState({ menu:null }); };
     window.addEventListener('keydown', this._onKey);
+    this._onDocDown = e => { if (this.state.menu && !(e.target.closest && e.target.closest('.mv-nav'))) this.setState({ menu:null }); };
+    document.addEventListener('pointerdown', this._onDocDown);
     this._onStorage = e => { if (e.key === 'mv_features') this.setState({ features: loadFeatures() }); };
     window.addEventListener('storage', this._onStorage);
     if (this.state.features.newsletterPopup && !sessionStorage.getItem('mv_news')) this._newsT = setTimeout(() => { sessionStorage.setItem('mv_news', '1'); this.setState({ modal:'news' }); }, (this.props.newsletterDelay ?? 6) * 1000);
   }
-  componentWillUnmount() { window.removeEventListener('keydown', this._onKey); if (this._viewer) this._viewer.destroy(); window.removeEventListener('hashchange', this._onHash); window.removeEventListener('storage', this._onStorage); clearTimeout(this._newsT); clearInterval(this._prog); }
+  componentDidUpdate() {
+    const S = this.state, lock = (S.wizOpen && S.route.page === 'product') || S.cartOpen || !!S.modal;
+    if (lock !== !!this._lockY) this.lockScroll(lock);
+    // move focus into a newly opened dialog, give it back when it closes
+    const box = [...document.querySelectorAll('[data-trap]')].pop() || null;
+    if (box !== this._trapBox) { if (box && !this._trapBox) this._retFocus = document.activeElement; this._trapBox = box;
+      if (box) { if (!box.contains(document.activeElement)) box.focus({ preventScroll:true }); } else if (this._retFocus && document.contains(this._retFocus)) { this._retFocus.focus({ preventScroll:true }); this._retFocus = null; } }
+  }
+  // iOS ignores body{overflow:hidden}; pin the body instead and restore the scroll position
+  lockScroll(on) { const b = document.body.style;
+    if (on) { this._lockY = window.scrollY || 1; Object.assign(b, { position:'fixed', top: -window.scrollY + 'px', left:'0', right:'0', overflow:'hidden' }); }
+    else { const y = this._lockY; this._lockY = 0; Object.assign(b, { position:'', top:'', left:'', right:'', overflow:'' }); window.scrollTo(0, y > 1 ? y : 0); } }
+  toggleMenu(m) { if (this.state.menu === m && this._menuBy === 'click') this.setState({ menu:null }); else { this._menuBy = 'click'; this.setState({ menu:m }); } }
+  frame(fn) { this._frameFn = fn; if (!this._raf) this._raf = requestAnimationFrame(() => { this._raf = 0; const f = this._frameFn; this._frameFn = null; if (f) f(); }); } // at most one state update per animation frame
+  componentWillUnmount() { window.removeEventListener('popstate', this._onPop); document.removeEventListener('pointerdown', this._onDocDown); cancelAnimationFrame(this._raf); window.removeEventListener('keydown', this._onKey); if (this._viewer) this._viewer.destroy(); window.removeEventListener('hashchange', this._onHash); window.removeEventListener('storage', this._onStorage); clearTimeout(this._newsT); clearInterval(this._prog); }
   saveCart(cart) { this.setState({ cart }); try { localStorage.setItem('mv_cart', JSON.stringify(cart.map(c => ({ ...c, img: c.img && c.img.length > 200000 ? '' : c.img })))); } catch (e) {} }
   toastMsg(t) { this.setState({ toast:t }); clearTimeout(this._toastT); this._toastT = setTimeout(() => this.setState({ toast:'' }), 2200); }
   cz(patch) { this.setState(s => ({ cz: { ...s.cz, ...patch } })); }
   // ---------- wizard popup ----------
-  openWizard() { document.body.style.overflow = 'hidden'; this.setState({ wizOpen:true, cartOpen:false }); }
-  closeWizard() { document.body.style.overflow = ''; this._drag = this._cmp = this._rot = null; this.setState({ wizOpen:false }); }
+  openWizard() { if (!(history.state && history.state.mvWiz)) history.pushState({ mvWiz:1 }, ''); this.setState({ wizOpen:true, cartOpen:false, menu:null }); }
+  closeWizard(o = {}) { this._drag = this._cmp = this._rot = this._pinch = null; this._ptrs.clear(); this.setState({ wizOpen:false });
+    if (!o.nav && history.state && history.state.mvWiz) { this._popSkip = true; history.back(); } } // drop the wizard's history entry
+  stepBack() { const cz = this.state.cz, s = cz.step, p = this.product(), skip1 = (p.kind === 'rect' || p.kind === 'tabletop') && !this.state.features.photo_collage; this._drag = null;
+    if (s === 4) this.cz({ step: p.kind === 'idol' ? 2 : (cz.shd === 'done' && this.fOn('shd_enhance') ? '3b' : 3) });
+    else if (s === '3b') this.cz({ step:3 }); else if (s === 3) this.cz({ step:2 }); else if (s === 2 && !skip1) this.cz({ step:1 }); else return false;
+    return true; }
   attachViewer(el) {
     if (!el) { if (this._viewer) { this._viewer.destroy(); this._viewer = null; } this._vel = null; return; }
     if (el === this._vel) return; this._vel = el;
@@ -1545,7 +1618,7 @@ class Component extends DCLogic {
     if (!file) return;
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { this.setState({ upErr:'Please choose a JPG, PNG or WebP image.' }); return; }
     if (file.size > 30 * 1024 * 1024) { this.setState({ upErr:'This file is over 30 MB. Please choose a smaller image.' }); return; }
-    const gen = ++this._gen; this.setState({ upErr:'', upBusy:true });
+    const gen = ++this._gen; this.setState({ upErr:'', upBusy:true }); this.freePhoto();
     try {
       const raw = URL.createObjectURL(file); const big = await loadImg(raw);
       const ow = big.naturalWidth, oh = big.naturalHeight;
@@ -1559,36 +1632,43 @@ class Component extends DCLogic {
       this.cz({ img:url, enh:'', iw:img.naturalWidth, ih:img.naturalHeight, ow, oh, blur, ratio:auto.ratio, orient:auto.orient, mode: idol ? 'orig' : 'crop', zoom:1, cx:.5, cy:.5, smart:false,
         shd: shdOn ? 'run' : 'off', shdProg:0, cropOrig:'', cropEnh:'', final: idol ? url : '', useEnh:false, step: idol ? 4 : 3, pv:'', r3:{ x:-4, y:-22 }, tip:-1 });
       this.setState({ cmpPos:50, cmpZoom:1, cmpPan:{ x:0, y:0 } });
-      if (shdOn) this.runShd(gen, file);
+      if (shdOn) this.runShd(gen, url);
       if (idol) makeThumb(url).then(thumb => this.cz({ thumb }));
     } catch (e) { this.setState({ upErr:'We couldn’t read this image. Please try another file.' }); }
     finally { if (gen === this._gen) this.setState({ upBusy:false }); }
   }
-  async runShd(gen, file) {
+  async runShd(gen, workUrl) {
     const prog = n => { if (gen === this._gen) this.cz({ shdProg:n }); };
     const endpoint = (loadSettings().shdEndpoint || '').trim();
-    let url = '';
-    try { if (endpoint) { prog(15); url = await serverEnhance(endpoint, file); prog(100); } } catch (e) { console.warn('[S.HD] server failed, using in-browser enhancement', e); }
-    try { if (!url) url = await localEnhance(this._orig, prog); } catch (e) { if (gen === this._gen) this.cz({ shd:'err' }); return; }
-    if (gen !== this._gen) return;
-    this._enh = await loadImg(url);
-    let rot = this.state.cz.rotQ || 0; while (rot-- > 0) { const r = await rotateImg(this._enh); this._enh = r.img; url = r.url; }
-    this.cz({ enh:url, shd:'done', shdProg:100 });
-    if (this.state.cz.step === '3b') this.buildCompare();
+    const base = this._orig; let url = '';
+    try { if (endpoint) { prog(15); url = await serverEnhance(endpoint, await (await fetch(workUrl)).blob()); prog(100); } } catch (e) { console.warn('[S.HD] server failed, using in-browser enhancement', e); }
+    try {
+      if (!url) url = await localEnhance(base, prog);
+      if (gen !== this._gen) { revoke(url); return; }
+      let enh = await loadImg(url);
+      // the user may have rotated the photo while S.HD was running — catch up
+      let rot = this.state.cz.rotQ || 0; while (rot-- > 0) { const r = await rotateImg(enh); revoke(url); enh = r.img; url = r.url; }
+      if (gen !== this._gen) { revoke(url); return; }
+      this._enh = enh; this.cz({ enh:url, shd:'done', shdProg:100 });
+      if (this.state.cz.step === '3b') this.buildCompare();
+    } catch (e) { console.warn('[S.HD] enhancement failed', e); if (gen === this._gen) this.cz({ shd:'err' }); }
   }
   async rotatePhoto() {
     if (!this._orig || this._rotating) return; this._rotating = true; this.setState({ rotBusy:true });
     try { await this.rotateOnce(); } finally { this._rotating = false; this.setState({ rotBusy:false }); }
   }
   async rotateOnce() {
-    const r = await rotateImg(this._orig); this._orig = r.img; const cz = this.state.cz;
+    const r = await rotateImg(this._orig); this._orig = r.img; const cz = this.state.cz; const old = [cz.img, cz.enh];
     const patch = { img:r.url, iw:cz.ih, ih:cz.iw, ow:cz.oh, oh:cz.ow, orient: cz.orient === 'portrait' ? 'landscape' : 'portrait', cx:.5, cy:.5, smart:false, rotQ:((cz.rotQ || 0) + 1) % 4 };
     if (cz.ratio === '1:1') patch.orient = 'portrait';
     if (this._enh) { const e = await rotateImg(this._enh); this._enh = e.img; patch.enh = e.url; }
-    this.cz(patch);
+    this.cz(patch); revoke(...old);
   }
   toggleSmart() { const cz = this.state.cz; if (cz.smart) { this.cz({ smart:false, cx:.5, cy:.5 }); return; } if (!this._orig) return; const c = saliencyCenter(this._orig); this.cz({ smart:true, cx:c.cx, cy:c.cy }); this.toastMsg('Smart Focus centred the frame on the main subject'); }
   async confirmCrop() {
+    if (this._cropping) return; this._cropping = true; try { await this.confirmCropNow(); } finally { this._cropping = false; }
+  }
+  async confirmCropNow() {
     const cz = this.state.cz; const g = cropGeom(cz);
     const rect = { x0:g.x0, y0:g.y0, cw:g.cw, ch:g.ch };
     const cropOrig = await cropImg(this._orig, rect, cz.iw);
@@ -1598,8 +1678,9 @@ class Component extends DCLogic {
     if (cz.shd === 'done') this.buildCompare(rect);
   }
   async buildCompare(rect) { const cz = this.state.cz; rect = rect || cz.rect; if (!this._enh || !rect) return; const cropEnh = await cropImg(this._enh, rect, cz.iw, 1800); this.cz({ cropEnh }); }
-  choose(useEnh) { const cz = this.state.cz, final = useEnh ? cz.cropEnh : cz.cropOrig; this.cz({ useEnh, final, step:4, pv:'' }); this.setState({ modal:null }); makeThumb(final).then(thumb => this.cz({ thumb })); }
-  resetUpload() { this._gen++; this._orig = this._enh = null; this.cz({ img:'', enh:'', final:'', step:2 }); this.setState({ modal:null }); }
+  choose(useEnh) { const cz = this.state.cz, final = useEnh ? cz.cropEnh : cz.cropOrig; this.cz({ useEnh, final, step:4, pv:'' }); this.setState({ modal:null }); makeThumb(final).then(thumb => this.cz({ thumb })).catch(() => {}); }
+  freePhoto() { const c = this.state.cz; revoke(c.img, c.enh, c.cropOrig, c.cropEnh, c.final); }
+  resetUpload() { this._gen++; this.freePhoto(); this._orig = this._enh = null; this.cz({ img:'', enh:'', final:'', cropOrig:'', cropEnh:'', step:2 }); this.setState({ modal:null }); }
   printInches(p) { const cz = this.state.cz, rows = this.sizeList(p), row = rows.find(s => s[0] === cz.size) || rows[0]; const ar = cz.iw && cz.ih ? cz.iw / cz.ih : .75;
     if (p.kind === 'idol') { const L = parseInches(row[1])[0]; return ar >= 1 ? [L, +(L / ar).toFixed(1)] : [+(L * ar).toFixed(1), L]; }
     if (p.kind === 'hex') return [10.2, 8.9];
@@ -1610,7 +1691,10 @@ class Component extends DCLogic {
   sizeList(p) { const { cz } = this.state; if (p.kind === 'tabletop') return TABLETOP; if (p.kind === 'idol') return IDOL; if (p.kind === 'hex') return HEX.sizes; return SIZES[cz.ratio === 'orig' ? '3:4' : cz.ratio].sizes; }
   unitPrice(p) { const { cz } = this.state; if (p.kind === 'hex') return 24.99 * Math.max(1, cz.hexes.length); const row = this.sizeList(p).find(s => s[0] === cz.size) || this.sizeList(p)[0]; const m = p.kind === 'rect' ? (MOUNTS.find(m => m.id === cz.mount) || MOUNTS[0]).price : 0; return row[3] + m; }
   tiers() { return String(this.props.promoTiers ?? '10 / 25 / 35').split('/').map(x => parseInt(x, 10) / 100); }
-  cartCalc() { const { cart } = this.state; const [t1, t2, t3] = this.tiers(); const count = cart.reduce((a, c) => a + c.qty, 0); const sub = cart.reduce((a, c) => a + c.price * c.qty, 0); const rate = count >= 3 ? t3 : count === 2 ? t2 : count === 1 ? t1 : 0; return { count, sub, rate, disc: sub * rate, total: sub - sub * rate }; }
+  tierRate(n) { const [t1, t2, t3] = this.tiers(); return n >= 3 ? t3 : n === 2 ? t2 : n === 1 ? t1 : 0; }
+  cartCalc() { const { cart } = this.state; const prints = cart.filter(c => !c.noBundle); const count = cart.reduce((a, c) => a + c.qty, 0), pcount = prints.reduce((a, c) => a + c.qty, 0);
+    const sub = cart.reduce((a, c) => a + c.price * c.qty, 0), psub = prints.reduce((a, c) => a + c.price * c.qty, 0); const bundle = this.tierRate(pcount), code = CODES[this.state.code] || 0, rate = Math.max(bundle, code);
+    return { count, pcount, sub, rate, byCode: code > bundle, disc: psub * rate, total: sub - psub * rate }; }
   addItem(item) { const cart = [...this.state.cart, { id: Date.now() + Math.random(), qty:1, ...item }]; this.saveCart(cart); this.setState({ cartOpen:true }); }
 
   renderVals() {
@@ -1621,13 +1705,10 @@ class Component extends DCLogic {
     const border = on => on ? '#E8362D' : '#E8E4DF';
     const go = patch => () => this.setState(patch);
     const isRect = p.kind === 'rect' || p.kind === 'tabletop', isHex = p.kind === 'hex', isIdol = p.kind === 'idol';
-    const ratios = { '1:1':[1,1], '3:4':[3,4], '2:3':[2,3], 'orig':[3,4] };
-    let [rw, rh] = ratios[cz.ratio] || [3,4]; if (cz.orient === 'landscape') [rw, rh] = [rh, rw];
-    const base = 240; let cropW = rw >= rh ? base : Math.round(base * rw / rh), cropH = rw >= rh ? Math.round(base * rh / rw) : base;
-    if (isHex) { cropW = 220; cropH = cz.hexTop === 'pointy' ? 250 : 200; }
     const sizes = this.sizeList(p);
     const unit = this.unitPrice(p);
     const cc = this.cartCalc();
+    const [t1, t2, t3] = this.tiers(), pct = r => Math.round(r * 100) + '%';
     const cartItems = S.cart.map(c => ({ ...c, line: money(c.price * c.qty),
       inc: () => this.saveCart(S.cart.map(x => x.id === c.id ? { ...x, qty: x.qty + 1 } : x)),
       dec: () => this.saveCart(S.cart.map(x => x.id === c.id ? { ...x, qty: Math.max(1, x.qty - 1) } : x).filter(Boolean)),
@@ -1642,7 +1723,7 @@ class Component extends DCLogic {
     const isRegister = route.page === 'register';
     const [pw0, ph0] = this.printInches(p);
     const spec = isHex ? `${cz.hexes.length} hexagons · ${cz.hexTop} top` : isIdol ? `Size ${cz.size} · ${pw0}″ × ${ph0}″` : `${cz.size} · ${pw0}″ × ${ph0}″ · ${cz.mode === 'orig' ? 'Original ratio' : ratioText(cz.ratio, cz.orient)} · ${FINISHES.find(f => f.id === cz.finish).t}${p.kind === 'rect' ? ' · ' + MOUNTS.find(m => m.id === cz.mount).t : ''}${cz.useEnh ? ' · S.HD™' : ''}`;
-    const addNow = () => { if (isHex ? !cz.img : !cz.final) { this.toastMsg('Upload a photo first'); return false; } this.addItem({ name: p.name, spec, price: unit, qty: cz.qty, img: cz.thumb || '' }); return true; };
+    const addNow = () => { if (isHex ? !cz.img : !cz.final) { this.toastMsg('Upload a photo first'); return false; } this.addItem({ name: p.name, spec, price: unit, qty: cz.qty, img: cz.thumb || '', note: (cz.note || '').trim() }); return true; };
     const trackSteps = [['Order confirmed','Payment received',1],['Photo reviewed & enhanced','S.HD™ team approved',1],['In production','Dye-sublimation on 1 mm aluminum',1],['Shipped','Handed to carrier',1],['Delivered','—',0]].map(s => ({ t:s[0], d:s[1], bg: s[2] ? '#E8362D' : '#fff', border: s[2] ? '#E8362D' : '#C9C2BA', color: s[2] ? '#141414' : '#8E8E8E' }));
     const finishCards = [
       { k:'01 · BEFORE PRINTING', t:'High-Gloss White Finish', d:'Ultra-smooth bright white coating for vibrant colors and exceptional clarity.', pts:['Glossy surface','Pure white base','Bright reflection'], bg:'linear-gradient(135deg,#fff,#EDE9E4)', ph:'texture: gloss white' },
@@ -1650,7 +1731,6 @@ class Component extends DCLogic {
       { k:'02 · AFTER PRINTING', t:'High-Gloss White Finish', d:'Vivid colors with true white reproduction for a clean, gallery-quality look.', pts:['High color vibrancy','True white reproduction','Deep image depth'], bg:'repeating-linear-gradient(135deg,#F7B21B 0 12px,#F26A1B 12px 24px)', ph:'artwork on gloss' },
       { k:'02 · AFTER PRINTING', t:'Raw Brushed Aluminum Finish', d:'White areas reveal the brushed aluminum beneath — a unique industrial metallic effect.', pts:['Metallic texture visible','Muted matte appearance','Industrial aesthetic'], bg:'repeating-linear-gradient(135deg,#C9A25A 0 12px,#B0B0B0 12px 24px)', ph:'artwork on brushed' },
     ];
-    const czStepNum = cz.step === 'shd' || cz.step === 'cmp' ? 2 : cz.step;
     const hexOn = cz.hexes;
 
     // ---------- photo tools view values ----------
@@ -1709,7 +1789,7 @@ class Component extends DCLogic {
       spots: (BACK_SPOTS[mountId] || []).map(s => ({ x:s[0], y:s[1], t:s[2] })) };
     this._vopts = vopts; if (this._viewer) Promise.resolve().then(() => this._viewer && this._viewer.update(this._vopts));
     const photoVals = {
-      czStepLabel: cz.step === '3b' ? stepNum + 'B' : String(stepNum), czStepTotal: total, czDots: Array.from({ length: total }, (_, i) => ({ w: i + 1 === stepNum ? 26 : 7, bg: i + 1 <= stepNum ? '#141414' : '#D9D4CE' })),
+      czStepLabel: String(stepNum), czStepTotal: total, czDots: Array.from({ length: total }, (_, i) => ({ w: i + 1 === stepNum ? 26 : 7, bg: i + 1 <= stepNum ? '#141414' : '#D9D4CE' })),
       czStep1: cz.step === 1 && !skip1, czStep2: cz.step === 2 || (cz.step === 1 && skip1), showUploadBack: !skip1, czStep3Rect: cz.step === 3 && isRectLike, czStep3Hex: cz.step === 3 && p.kind === 'hex', czStep3b: cz.step === '3b', czStep4: cz.step === 4,
       czProcessing:false, czCompare:false, czStep3:false,
       // upload
@@ -1720,10 +1800,16 @@ class Component extends DCLogic {
       czImg: cz.img, czEnh: cz.enh, czZoom: cz.zoom, czZoomPct: Math.round((cz.zoom || 1) * 100),
       setZoom: e => this.cz({ zoom: +e.target.value / 100 }),
       cropStageStyle, cropImgStyle, cropFrameStyle,
-      cropDown: e => { if (cz.mode === 'orig' || !g) return; e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); this._drag = { x:e.clientX, y:e.clientY, cx: clampC(cz.cx, g.cw / cz.iw / 2), cy: clampC(cz.cy, g.ch / cz.ih / 2) }; },
-      cropMove: e => { const d = this._drag; if (!d) return; const c = this.state.cz, gg = cropGeom(c); this.cz({ smart:false, cx: clampC(d.cx - (e.clientX - d.x) / gg.k / c.iw, gg.cw / c.iw / 2), cy: clampC(d.cy - (e.clientY - d.y) / gg.k / c.ih, gg.ch / c.ih / 2) }); },
-      cropUp: () => { this._drag = null; },
-      cropCaption: cz.mode === 'orig' ? `Full image · ${pw}″ × ${phh}″ at size ${cz.size}` : `Drag to adjust · ${cz.orient === 'landscape' ? 'Landscape' : 'Portrait'} · ${ratioText(cz.ratio, cz.orient)}`,
+      cropDown: e => { if (cz.mode === 'orig' || !g) return; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} this._ptrs.set(e.pointerId, { x:e.clientX, y:e.clientY });
+        const pts = [...this._ptrs.values()];
+        if (pts.length >= 2) { this._drag = null; this._pinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, z0: cz.zoom || 1 }; return; } // two fingers → zoom
+        this._drag = { x:e.clientX, y:e.clientY, cx: clampC(cz.cx, g.cw / cz.iw / 2), cy: clampC(cz.cy, g.ch / cz.ih / 2) }; },
+      cropMove: e => { if (this._ptrs.has(e.pointerId)) this._ptrs.set(e.pointerId, { x:e.clientX, y:e.clientY });
+        const pin = this._pinch; if (pin) { const pts = [...this._ptrs.values()]; if (pts.length < 2) return; const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y); this.frame(() => this.cz({ smart:false, zoom: Math.max(1, Math.min(3, pin.z0 * d / pin.d0)) })); return; }
+        const d = this._drag; if (!d) return; const ex = e.clientX, ey = e.clientY;
+        this.frame(() => { const c = this.state.cz, gg = cropGeom(c); this.cz({ smart:false, cx: clampC(d.cx - (ex - d.x) / gg.k / c.iw, gg.cw / c.iw / 2), cy: clampC(d.cy - (ey - d.y) / gg.k / c.ih, gg.ch / c.ih / 2) }); }); },
+      cropUp: e => { this._ptrs.delete(e && e.pointerId); if (this._ptrs.size < 2) this._pinch = null; this._drag = null; },
+      cropCaption: cz.mode === 'orig' ? `Full image · ${pw}″ × ${phh}″ at size ${cz.size}` : `Drag · pinch or slider to zoom · ${cz.orient === 'landscape' ? 'Landscape' : 'Portrait'} · ${ratioText(cz.ratio, cz.orient)}`,
       showOrigHint: origLoss > 0.2, origHintText: `Your crop hides ${Math.round(origLoss * 100)}% of the photo — try "Original ratio" to keep it all`,
       isCropMode: cz.mode !== 'orig', isOrigMode: cz.mode === 'orig', cropModeBg: cz.mode !== 'orig' ? '#fff' : 'transparent', origModeBg: cz.mode === 'orig' ? '#fff' : 'transparent',
       setCropMode: () => this.cz({ mode:'crop' }), askOriginal: () => this.setState({ modal:'orig' }), confirmOriginal: () => { this.cz({ mode:'orig', zoom:1, cx:.5, cy:.5, smart:false }); this.setState({ modal:null }); },
@@ -1734,7 +1820,7 @@ class Component extends DCLogic {
       rotate: () => this.rotatePhoto(), rotateLabel: S.rotBusy ? '⟳ Rotating…' : '⟳ Rotate', smartAvail: on.photo_smartFocus && cz.mode !== 'orig', czSmart: !!cz.smart, smartFocus: () => this.toggleSmart(), smartBorder: cz.smart ? '#E8362D' : '#E8E4DF', smartBg: cz.smart ? '#FFF4EE' : '#fff',
       qual, qual4, openQDemo: () => this.setState({ modal:'qdemo', qdemoPos:50, qdemoZoom:1 }),
       shdPill: on.shd_enhance ? shdPill : '', shdPillBg: cz.shd === 'done' ? '#EAF6EE' : cz.shd === 'err' ? '#FDECEC' : '#F1EEEA', shdPillColor: cz.shd === 'done' ? '#1E7A3A' : cz.shd === 'err' ? '#B3261E' : '#4A4A4A',
-      czBack: () => { this._drag = null; const s = cz.step; if (s === 4) this.cz({ step: p.kind === 'idol' ? 2 : (cz.shd === 'done' && on.shd_enhance ? '3b' : 3) }); else if (s === '3b') this.cz({ step:3 }); else if (s === 3) this.cz({ step:2 }); else this.cz({ step: skip1 ? 2 : 1 }); },
+      czBack: () => this.stepBack(),
       czNext: () => this.confirmCrop(), hexNext: () => this.cz({ step:4 }),
       hexH: cz.hexTop === 'pointy' ? 250 : 200, hexClip: cz.hexTop === 'pointy' ? 'polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)' : 'polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)',
       // compare
@@ -1742,16 +1828,17 @@ class Component extends DCLogic {
       czCropOrig: cz.cropOrig, czCropEnh: cz.cropEnh, cmpPos: S.cmpPos ?? 50,
       cmpBoxStyle: { position:'relative', width:'100%', maxWidth: Math.round(380 * cmpAspect) + 'px', margin:'0 auto', aspectRatio: `${g ? g.fw : 1} / ${g ? g.fh : 1}`, borderRadius:'16px', overflow:'hidden', background:'#141414', touchAction:'none', userSelect:'none', cursor: z > 1 ? 'grab' : 'ew-resize' },
       cmpImgStyle: { position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', transform:`translate(${pan.x}px,${pan.y}px) scale(${z})`, transformOrigin:'center', pointerEvents:'none' },
-      cmpDown: e => { const el = e.currentTarget, r = el.getBoundingClientRect(); el.setPointerCapture && el.setPointerCapture(e.pointerId); const handle = e.target.closest && e.target.closest('[data-handle]');
+      cmpDown: e => { const el = e.currentTarget, r = el.getBoundingClientRect(); try { el.setPointerCapture(e.pointerId); } catch (x) {} const handle = e.target.closest && e.target.closest('[data-handle]');
         if (handle || z === 1) { this._cmp = { mode:'slide', r }; this.setState({ cmpPos: Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)) }); }
         else this._cmp = { mode:'pan', r, x:e.clientX, y:e.clientY, px:pan.x, py:pan.y }; },
-      cmpMove: e => { const c = this._cmp; if (!c) return; if (c.mode === 'slide') this.setState({ cmpPos: Math.max(0, Math.min(100, (e.clientX - c.r.left) / c.r.width * 100)) });
-        else { const zz = this.state.cmpZoom, mx = (zz - 1) * c.r.width / 2, my = (zz - 1) * c.r.height / 2; this.setState({ cmpPan: { x: Math.max(-mx, Math.min(mx, c.px + e.clientX - c.x)), y: Math.max(-my, Math.min(my, c.py + e.clientY - c.y)) } }); } },
+      cmpMove: e => { const c = this._cmp; if (!c) return; const ex = e.clientX, ey = e.clientY;
+        this.frame(() => { if (c.mode === 'slide') this.setState({ cmpPos: Math.max(0, Math.min(100, (ex - c.r.left) / c.r.width * 100)) });
+          else { const zz = this.state.cmpZoom, mx = (zz - 1) * c.r.width / 2, my = (zz - 1) * c.r.height / 2; this.setState({ cmpPan: { x: Math.max(-mx, Math.min(mx, c.px + ex - c.x)), y: Math.max(-my, Math.min(my, c.py + ey - c.y)) } }); } }); },
       cmpUp: () => { this._cmp = null; },
       cmpHint: z > 1 ? 'Drag to move · drag the ‹› handle to compare' : '🔍 Zoom in on faces to inspect fine details',
       cmpZooms: [1, 2, 3].map(n => ({ label: n + '×', on: z === n, bg: z === n ? '#fff' : 'transparent', pick: () => this.setState({ cmpZoom:n, cmpPan:{ x:0, y:0 } }) })),
       openFullEnh: () => this.setState({ modal:'fullEnh' }),
-      useEnhanced: () => { if (on.shd_consent) this.setState({ modal:'consent' }); else this.choose(true); }, confirmEnhanced: () => this.choose(true), useOriginal: () => this.choose(false),
+      useEnhanced: () => this.choose(true), useOriginal: () => this.choose(false), // consent text is shown inline above the buttons
       resetUploadNow: () => this.resetUpload(),
       wmStyle: { ...wmBase, backgroundSize:'230px 150px' }, wmStyleSmall: { ...wmBase, backgroundSize:'120px 78px' },
       // step 4 preview
@@ -1781,10 +1868,11 @@ class Component extends DCLogic {
       mountOptions: MOUNTS.map(m => ({ ...m, on: cz.mount === m.id, bg2: cz.mount === m.id ? '#F7F3EE' : '#fff', icon: m.id === 'magnet' ? '◉' : m.id === 'float' ? '▣' : '▭', border: border(cz.mount === m.id), priceColor: m.price ? '#141414' : '#1E7A3A', pick: () => this.cz({ mount:m.id, tip:-1 }) })),
       // wizard chrome
       addToCart: () => { if (addNow()) { this.closeWizard(); this.setState({ cartOpen:true }); } }, // the opened cart drawer is the confirmation
-      buyNow: () => { if (addNow()) { this.closeWizard(); this.setState({ cartOpen:false }); location.hash = '#/checkout'; } },
+      buyNow: () => { if (addNow()) { this.closeWizard({ nav:true }); this.setState({ cartOpen:false }); location.hash = '#/checkout'; } },
+      mobileCta: !S.wizOpen && route.page === 'product',
       wizOpen: S.wizOpen && route.page === 'product', openWizard: () => this.openWizard(), closeWizard: () => this.closeWizard(),
       ctaLabel: cz.img ? 'CONTINUE YOUR DESIGN' : 'START CREATING', ctaSteps: total,
-      czStepName: ({ 1:'CHOOSE STYLE', 2:'UPLOAD', 3:'FRAME & CROP', '3b':'HD PREVIEW', 4:'SIZE & MOUNTING' })[cz.step] || '',
+      czStepName: ({ 1: skip1 ? 'UPLOAD' : 'CHOOSE STYLE', 2:'UPLOAD', 3:'FRAME & CROP', '3b':'HD PREVIEW', 4:'SIZE & MOUNTING' })[cz.step] || '',
       wzBackStyle: { width:'40px', height:'40px', borderRadius:'50%', border:'1px solid #E8E4DF', background:'#fff', fontSize:'16px', color:'#141414', visibility: (cz.step === 1 || (cz.step === 2 && skip1)) ? 'hidden' : 'visible' },
       finishName: fin.t, mountName: (MOUNTS.find(m => m.id === cz.mount) || MOUNTS[0]).t,
       // 3D viewer (three.js) + CSS fallback
@@ -1792,7 +1880,7 @@ class Component extends DCLogic {
       viewerStyle: { position:'absolute', inset:0, visibility: (pv === '3d' || pv === 'back') && S.three === 'ready' ? 'visible' : 'hidden' },
       css3d: (pv === '3d' || pv === 'back') && S.three !== 'ready',
       // modals
-      modalOrig: S.modal === 'orig', modalConsent: S.modal === 'consent', modalQDemo: S.modal === 'qdemo', modalFullEnh: S.modal === 'fullEnh',
+      modalOrig: S.modal === 'orig', modalQDemo: S.modal === 'qdemo', modalFullEnh: S.modal === 'fullEnh',
       qdemoReady: !!cz.enh, qdemoWaiting: !cz.enh, qdemoWaitText: !cz.img ? 'Upload a photo to see S.HD™ on your own image.' : cz.shd === 'run' ? `Enhancing your photo… ${cz.shdProg || 0}%` : 'Enhancement preview is not available for this photo.',
       qdemoPos: S.qdemoPos ?? 50, setQdemo: e => this.setState({ qdemoPos: +e.target.value }),
       qdemoBoxStyle: { position:'relative', width:'100%', aspectRatio: `${cz.iw || 4} / ${cz.ih || 3}`, maxHeight:'52vh', borderRadius:'14px', overflow:'hidden', background:'#141414' },
@@ -1808,11 +1896,14 @@ class Component extends DCLogic {
       on, footGuides: on.foot_faq || on.foot_blog || on.foot_sizes || on.foot_howto || on.foot_finishes, footFollow: on.foot_social || on.foot_newsletter, goStory: on.nav_wall ? () => { location.hash = '#/wall'; } : undefined, storyCursor: on.nav_wall ? 'pointer' : 'default',
       scrollToCz: () => { const el = document.getElementById('customizer'); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); },
       products: VP.map(x => ({ ...x, from: money(x.from) })), artists: ARTISTS, menuPrints: S.menu === 'prints', menuArt: S.menu === 'art',
-      openMenuPrints: go({ menu:'prints' }), openMenuArt: go({ menu:'art' }), toggleMenuPrints: () => this.setState({ menu: S.menu === 'prints' ? null : 'prints' }), toggleMenuArt: () => this.setState({ menu: S.menu === 'art' ? null : 'art' }), closeMenu: go({ menu:null }),
+      // hover opens the menu; a click pins it (so clicking a hover-opened menu never closes it), a second click closes. On touch, tap = hover + click → opens.
+      openMenuPrints: () => { if (this.state.menu !== 'prints') { this._menuBy = 'hover'; this.setState({ menu:'prints' }); } }, openMenuArt: () => { if (this.state.menu !== 'art') { this._menuBy = 'hover'; this.setState({ menu:'art' }); } },
+      toggleMenuPrints: () => this.toggleMenu('prints'), toggleMenuArt: () => this.toggleMenu('art'), closeMenu: go({ menu:null }),
       q: S.q, setQ: e => this.setState({ q: e.target.value }), submitSearch: e => { e.preventDefault(); location.hash = '#/search/' + encodeURIComponent(S.q); },
-      cartCount: cc.count, openCart: go({ cartOpen:true }), closeCart: go({ cartOpen:false }), cartOpen: S.cartOpen, cartEmpty: S.cart.length === 0, cartItems,
-      cartSubtotal: money(cc.sub), cartDisc: money(cc.disc), cartTotal: money(cc.total), cartDiscLabel: cc.rate ? `Bundle discount · ${Math.round(cc.rate * 100)}% off` : 'Bundle discount',
-      cartTierHint: cc.count === 0 ? 'Add 1 print for 10% off · 2 for 25% · 3+ for 35%' : cc.count === 1 ? 'Add one more print to unlock 25% off' : cc.count === 2 ? 'Add one more print to unlock 35% off' : '35% off unlocked — maximum bundle savings',
+      cartCount: cc.count, cartAria: `Cart, ${cc.count} item${cc.count === 1 ? '' : 's'}`, openCart: go({ cartOpen:true }), closeCart: go({ cartOpen:false }), cartOpen: S.cartOpen, cartEmpty: S.cart.length === 0, cartItems,
+      cartSubtotal: money(cc.sub), cartDisc: money(cc.disc), cartTotal: money(cc.total), cartDiscLabel: cc.byCode ? `Code ${S.code} · ${pct(cc.rate)} off prints` : cc.rate ? `Bundle discount · ${pct(cc.rate)} off prints` : 'Bundle discount',
+      cartTierHint: cc.pcount === 0 ? `Add 1 print for ${pct(t1)} off · 2 for ${pct(t2)} · 3+ for ${pct(t3)}` : cc.pcount === 1 ? `Add one more print to unlock ${pct(t2)} off` : cc.pcount === 2 ? `Add one more print to unlock ${pct(t3)} off` : `${pct(t3)} off unlocked — maximum bundle savings`,
+      promoText: `EXCLUSIVE OFFER · ${pct(t1)} OFF 1 PRINT · ${pct(t2)} OFF 2 PRINTS · ${pct(t3)} OFF 3+ PRINTS`,
       // home
       tabWhat: go({ tab:'what' }), tabWhy: go({ tab:'why' }), isTabWhat: S.tab === 'what', isTabWhy: S.tab === 'why',
       tabWhatBg: S.tab === 'what' ? '#141414' : 'transparent', tabWhatColor: S.tab === 'what' ? '#fff' : '#141414', tabWhyBg: S.tab === 'why' ? '#141414' : 'transparent', tabWhyColor: S.tab === 'why' ? '#fff' : '#141414',
@@ -1827,32 +1918,16 @@ class Component extends DCLogic {
       featuredArtists: ARTISTS.slice(0, 2),
       // product
       product: { ...p, from: money(p.from), was: money(p.was) },
-      bundles: [{ t:'For Yourself', d:'Your own wall, your memory', off:'1 print · 10% off' },{ t:'Keep One · Gift One', d:'Perfect for couples or a friend', off:'2 prints · 25% off' },{ t:'Gallery Collection', d:'Fill the wall with moments that matter', off:'3+ prints · 35% off' }],
+      bundles: [{ t:'For Yourself', d:'Your own wall, your memory', off:`1 print · ${pct(t1)} off` },{ t:'Keep One · Gift One', d:'Perfect for couples or a friend', off:`2 prints · ${pct(t2)} off` },{ t:'Gallery Collection', d:'Fill the wall with moments that matter', off:`3+ prints · ${pct(t3)} off` }],
       openSizes: go({ modal:'sizes' }), openFinishes: go({ modal:'finishes' }), openMounts: go({ modal:'mounts' }),
       isRectProduct: isRect, isHexProduct: isHex, isIdolProduct: isIdol,
-      czStepLabel: czStepNum, czDots: [1,2,3,4].map(n => ({ bg: n <= czStepNum ? '#E8362D' : '#EFEBE6' })),
-      czStep1: cz.step === 1, czStep2: cz.step === 2, czProcessing: cz.step === 'shd', czCompare: cz.step === 'cmp', czStep3: cz.step === 3, czStep4: cz.step === 4,
       styleOptions: (isHex ? [['collage','Photo Collage','Upload one or more photos, cropping each into its own hexagon.','Choose your hex style'],['split','Split Photo','Turn one photo into a hexagon puzzle wall for your space.','One photo, many panels']] : isIdol ? [['screenshot','Screenshot Restore','Upload any screenshot — we restore the HD original and email a preview.','Preview before production'],['photo','Original Artwork','Already have the full-res artwork? Upload it directly.','Fastest path']] : [['photo','Custom Photo','Upload phone photos, digital art or wallpapers. We verify every file before production.','Timeless & versatile · Phone-photo friendly'],['collage','Collage Builder','Mix and match multiple panels to build your own gallery wall.','Magnetic mount included']]).filter(s => isHex || s[0] !== 'collage' || S.features.photo_collage).map((s, i) => ({ t:s[1], d:s[2], badge:s[3], c1: ph(i)[0], c2: ph(i)[1], border: border(cz.style === s[0]), pick: () => this.cz({ style:s[0], step:2 }) })),
-      prevent: e => e.preventDefault(), onDrop: e => { e.preventDefault(); this.readFile(e.dataTransfer.files[0]); }, onFile: e => this.readFile(e.target.files[0]),
-      czImg: cz.img, czProgress: Math.round(cz.progress), cmpPos: S.cmp, cmpClip: 100 - S.cmp, setCmp: e => this.setState({ cmp: +e.target.value }), czCmpZoom: S.cmpZoom ? 2 : 1, czCmpZoomLabel: S.cmpZoom ? '1.0×' : '2.0× Zoom In', toggleCmpZoom: go({ cmpZoom: !S.cmpZoom }),
-      useEnhanced: () => this.cz({ enhanced:true, step:3 }), useOriginal: () => this.cz({ enhanced:false, step:3 }),
-      cropW, cropH, cropRadius: isHex ? '0' : '4px', cropClip: isHex ? (cz.hexTop === 'pointy' ? 'polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)' : 'polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)') : 'none',
-      czZoom: cz.zoom, czZoomPct: Math.round(cz.zoom * 100), setZoom: e => this.cz({ zoom: +e.target.value / 100 }), czRot: cz.rot, rotate: () => this.cz({ rot: (cz.rot + 90) % 360 }), czFilter: cz.enhanced ? 'contrast(1.08) saturate(1.15)' : 'none',
       hexPointy: () => this.cz({ hexTop:'pointy' }), hexFlat: () => this.cz({ hexTop:'flat' }), pointyBorder: border(cz.hexTop === 'pointy'), flatBorder: border(cz.hexTop === 'flat'),
-      ratioOptions: [['1:1','1:1 Square'],['3:4','3:4 Standard'],['2:3','2:3 Classic'],['orig','Original']].map(r => ({ label:r[1], border: border(cz.ratio === r[0]), pick: () => { if (r[0] === 'orig') this.toastMsg('Original ratio: final dimensions adjust to fit the standard size'); this.cz({ ratio:r[0] }); } })),
-      setPortrait: () => this.cz({ orient:'portrait' }), setLandscape: () => this.cz({ orient:'landscape' }), portraitBorder: border(cz.orient === 'portrait'), landscapeBorder: border(cz.orient === 'landscape'),
-      czBack: () => this.cz({ step: cz.step === 4 ? 3 : cz.step === 3 ? 2 : 1 }), czNext: () => this.cz({ step:4 }),
       hexCells: HEX_LAYOUT.map(c => ({ ...c, on: hexOn.includes(c.id), showImg: hexOn.includes(c.id) && !!cz.img, bg: hexOn.includes(c.id) ? '#141414' : 'rgba(255,255,255,.7)', toggle: () => this.cz({ hexes: hexOn.includes(c.id) ? hexOn.filter(x => x !== c.id) : [...hexOn, c.id] }) })),
       hexFlower: () => this.cz({ hexes: PRESETS.flower }), hexHeart: () => this.cz({ hexes: PRESETS.heart }), hexLandscape: () => this.cz({ hexes: PRESETS.landscape }), hexClear: () => this.cz({ hexes: [] }),
       hexCount: hexOn.length, hexArea: `${Math.round(10.2 * Math.min(5, Math.max(1, hexOn.length)) * .8)}″ × ${Math.round(8.9 * Math.ceil(hexOn.length / 5) * 1.2)}″`,
-      onTilt: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ tilt: { x: -((e.clientY - r.top) / r.height - .5) * 24, y: ((e.clientX - r.left) / r.width - .5) * 30 } }); }, resetTilt: go({ tilt:{ x:0, y:0 } }), tiltX: S.tilt.x.toFixed(1), tiltY: S.tilt.y.toFixed(1),
-      finishBg: FINISHES.find(f => f.id === cz.finish).bg, finishBlend: FINISHES.find(f => f.id === cz.finish).blend,
-      sizeOptions: sizes.map(s => ({ code:s[0], dim:s[1], price: money(s[3]), border: border(cz.size === s[0]), pick: () => this.cz({ size:s[0] }) })),
-      finishOptions: FINISHES.map(f => ({ ...f, border: border(cz.finish === f.id), pick: () => this.cz({ finish:f.id }) })),
-      mountOptions: MOUNTS.map(m => ({ ...m, border: border(cz.mount === m.id), priceColor: m.price ? '#141414' : '#1E8E3E', pick: () => this.cz({ mount:m.id }) })),
       czNote: cz.note, setNote: e => this.cz({ note: e.target.value }), czQty: cz.qty, qtyInc: () => this.cz({ qty: cz.qty + 1 }), qtyDec: () => this.cz({ qty: Math.max(1, cz.qty - 1) }),
-      czTotal: money(unit * cz.qty), czTotalNote: cz.qty >= 3 ? '35% bundle discount at checkout' : cz.qty === 2 ? '25% bundle discount at checkout' : '10% off at checkout',
-      addToCart: () => { if (addNow()) this.toastMsg('Added to cart'); }, buyNow: () => { if (addNow()) { this.setState({ cartOpen:false }); location.hash = '#/checkout'; } },
+      czTotal: money(unit * cz.qty), czTotalNote: (() => { const n = cc.pcount + cz.qty, r = pct(this.tierRate(n)); return cc.pcount ? `${r} bundle discount with the ${cc.pcount} print${cc.pcount === 1 ? '' : 's'} in your cart` : n >= 2 ? `${r} bundle discount at checkout` : `${r} off at checkout`; })(),
       payments: ['VISA','Mastercard','AMEX','PayPal','Apple Pay','Google Pay','Discover'],
       reviews: REVIEWS, mounts: MOUNTS, faqs,
       mountPerks: [['PREMIUM QUALITY','High-end materials for lasting durability.'],['EASY INSTALL','Everything you need included.'],['SECURE & STABLE','Built to keep your art beautifully in place.'],['SLEEK & MODERN','Minimal hardware for a clean look.']].map(x => ({ t:x[0], d:x[1] })),
@@ -1864,9 +1939,10 @@ class Component extends DCLogic {
       // about
       aboutBlocks: [['ABOUT US','Who We Are','A dedicated collective of designers and craftspeople elevating how art is displayed at home. With aerospace-grade 1 mm aluminum and 1200 DPI S.HD precision printing, we transform digital masterpieces into tangible, industrial-grade art that stands the test of time.'],['OUR VISION','What We Believe','Art should be a permanent fixture in your life, not a temporary decoration. Our "Warm Home" philosophy: the spaces we inhabit are enriched by the stories we display — and high-end aesthetics should be accessible to those who value quality and emotional depth.'],['OUR PROMISE','Our Principles','Durability — we reject disposable decor that fades, tears or warps.\nEmotional value — no soulless mass production. Every order becomes a cherished heirloom meant to be passed down.'],['OUR FUTURE','What We Hope','To be a meaningful companion through life\'s milestones — your wedding day, your pets, the family memories you hold most dear — so the art on your walls reminds you of the love that makes your life unique.']].map((b, i) => ({ k:b[0], t:b[1], d:b[2], c1: ph(i)[0], c2: ph(i)[1], ph: 'photo: ' + b[1].toLowerCase(), imgOrder: i % 2 ? 2 : 0 })),
       // mount kit
-      addMountKit: () => { this.addItem({ name:'Safe-Wall Magnetic Mounting System', spec:'Kit · holds up to 22″', price:19.99, img:'' }); this.toastMsg('Added to cart'); },
+      addMountKit: () => { this.addItem({ name:'Safe-Wall Magnetic Mounting System', spec:'Kit · holds up to 22″', price:19.99, img:'', noBundle:true }); this.toastMsg('Added to cart'); },
       // track
-      trackId: S.trackId, trackEmail: S.trackEmail, setTrackId: e => this.setState({ trackId: e.target.value }), setTrackEmail: e => this.setState({ trackEmail: e.target.value }), trackSubmit: e => { e.preventDefault(); this.setState({ trackResult:true }); }, trackResult: S.trackResult, trackIdShown: S.trackId.toUpperCase(), trackSteps,
+      trackId: S.trackId, trackEmail: S.trackEmail, setTrackId: e => this.setState({ trackId: e.target.value }), setTrackEmail: e => this.setState({ trackEmail: e.target.value }), trackSubmit: e => { e.preventDefault(); this.setState({ trackResult:true }); }, trackResult: S.trackResult, trackIdShown: S.trackId.trim().toUpperCase(), trackSteps,
+      ...(() => { const found = loadOrders().includes(S.trackId.trim().toUpperCase()); return { trackFound: found, trackMissing: !found, trackTitle: found ? 'Received · preview on its way' : 'We couldn’t find this order' }; })(),
       // guides
       sizeGroups: sizeGroupsFor(route.page === 'sizes' ? 'all' : S.sizeTab).map(mkSizes).concat(route.page === 'sizes' ? [mkSizes(COLLAGE), mkSizes(HEX)] : []),
       sizeTabs: [['photo','Custom Photo · from $39.99'],['collage','Collage Builder · from $49.99'],['hex','Hexagon · from $24.99']].map(t => ({ label:t[1], border: border(S.sizeTab === t[0]), bg: S.sizeTab === t[0] ? '#E8362D' : '#fff', color: S.sizeTab === t[0] ? '#fff' : '#141414', pick: () => this.setState({ sizeTab:t[0] }) })),
@@ -1879,7 +1955,10 @@ class Component extends DCLogic {
       checkoutEmpty: S.cart.length === 0 && !S.orderPlaced, checkoutForm: S.cart.length > 0 && !S.orderPlaced,
       shipStd: S.ship !== 'exp', shipExp: S.ship === 'exp', pickStd: () => this.setState({ ship:'std' }), pickExp: () => this.setState({ ship:'exp' }),
       shipCost: money(S.ship === 'exp' ? 24.9 : 9.9), checkoutTotal: money(cc.total + (S.ship === 'exp' ? 24.9 : 9.9)),
-      placeOrder: e => { e.preventDefault(); const id = 'MV-' + Math.floor(10000 + Math.random() * 89999); this.setState({ orderPlaced:true, lastOrderId:id }); this.saveCart([]); }, orderPlaced: S.orderPlaced, lastOrderId: S.lastOrderId,
+      placeOrder: e => { e.preventDefault(); const id = 'MV-' + Math.floor(10000 + Math.random() * 89999); try { localStorage.setItem('mv_orders', JSON.stringify([...loadOrders(), id].slice(-20))); } catch (x) {} this.setState({ orderPlaced:true, lastOrderId:id, trackId:id, code:'', codeDraft:'', codeMsg:'' }); this.saveCart([]); }, orderPlaced: S.orderPlaced, lastOrderId: S.lastOrderId,
+      codeDraft: S.codeDraft, setCodeDraft: e => this.setState({ codeDraft: e.target.value.toUpperCase() }), codeMsg: S.codeMsg, codeMsgColor: S.codeOk ? '#1E7A3A' : '#B3261E',
+      applyCode: () => { const c = S.codeDraft.trim().toUpperCase(); if (!c) { this.setState({ code:'', codeMsg:'', codeOk:false }); return; } if (!CODES[c]) { this.setState({ code:'', codeMsg:'This code isn’t valid.', codeOk:false }); return; }
+        const bundle = this.tierRate(cc.pcount); this.setState({ code:c, codeOk:true, codeMsg: CODES[c] > bundle ? `${c} applied · ${pct(CODES[c])} off prints` : `${c} is valid, but your ${pct(bundle)} bundle discount is bigger — we kept that (codes don’t stack).` }); },
       // modals
       modalOpen: !!S.modal, modalWidth: S.modal === 'sizes' || S.modal === 'finishes' || S.modal === 'mounts' ? 860 : S.modal === 'qdemo' || S.modal === 'fullEnh' ? 760 : S.modal === 'orig' || S.modal === 'consent' ? 480 : 620, closeModal: go({ modal:null, copied:false }), stop: e => e.stopPropagation(),
       modalSizes: S.modal === 'sizes', modalFinishes: S.modal === 'finishes', modalMounts: S.modal === 'mounts', modalSubmit: S.modal === 'submit', modalSubmitted: S.modal === 'submitted', modalNews: S.modal === 'news',
