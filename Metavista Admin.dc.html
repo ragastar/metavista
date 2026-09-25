@@ -4,15 +4,27 @@
 <meta charset="utf-8">
 <title>Metavista — админка</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="./assets/logo-mark.png">
+<link rel="icon" type="image/png" href="./assets/favicon-48.png">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- React is loaded here (in parallel with support.js) instead of by support.js after it runs; support.js skips its own load when window.React exists -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
 <script src="./support.js"></script>
+<style>
+body{margin:0;background:#FBFAF8}
+.mv-skel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#FBFAF8;z-index:1}
+.mv-skel img{height:56px;width:auto;animation:mv-skel 1.2s ease-in-out infinite alternate}
+@keyframes mv-skel{from{opacity:.35}to{opacity:1}}
+#dc-root:not(:empty) ~ .mv-skel{display:none}
+</style>
 </head>
 <body>
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#FBFAF8;color:#141414;font-family:Montserrat,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
@@ -25,7 +37,11 @@ button{cursor:pointer}
   .adm-root{display:block!important}
   .adm-side{position:static!important;height:auto!important;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;align-items:center;padding:12px!important}
   .adm-side > a{flex-shrink:0;white-space:nowrap}
-  .adm-side > div:last-child{display:none!important}
+  .adm-side > div:last-child{margin:0 0 0 auto!important;border:0!important;padding:0 0 0 8px!important;flex-shrink:0}
+  .adm-side > div:last-child > span{display:none!important}
+  input,textarea,select{font-size:16px!important}
+  .adm-row{grid-template-columns:52px minmax(0,1fr)!important}
+  .adm-row > :last-child{grid-column:1 / -1;flex-wrap:wrap}
   .adm-main{padding:20px 16px 48px!important}
   .adm-main input[placeholder^="Поиск"]{width:100%!important}
   .adm-main > div:first-child > div:last-child{width:100%}
@@ -40,7 +56,7 @@ button{cursor:pointer}
 <!-- SIDEBAR -->
 <aside class="adm-side" style="background:#141414;color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh">
   <a href="Metavista Store.dc.html" style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:19px;letter-spacing:-.02em;padding:4px 8px 18px">
-    <img src="assets/logo-mark.png" alt="" style="height:26px;width:auto">Metavista <span style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#B9B4AE;margin-left:4px">АДМИНКА</span>
+    <img src="assets/logo-mark-2x.png" alt="" width="30" height="26" style="height:26px;width:auto">Metavista <span style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#B9B4AE;margin-left:4px">АДМИНКА</span>
   </a>
   <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="9">
     <a href="{{ n.href }}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:{{ n.color }};background:{{ n.bg }}">
@@ -60,7 +76,7 @@ button{cursor:pointer}
   <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px">
     <div><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;color:#E8362D">{{ pageKicker }}</p><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em">{{ pageTitle }}</h1></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Поиск заказов, клиентов…" style="border:1px solid #E8E4DF;border-radius:999px;padding:10px 16px;font-size:13px;background:#fff;width:240px">
+      <sc-if value="{{ showSearch }}" hint-placeholder-val="{{ false }}"><input value="{{ q }}" onChange="{{ setQ }}" type="search" aria-label="Поиск" placeholder="{{ searchPh }}" style="border:1px solid #E8E4DF;border-radius:999px;padding:10px 16px;font-size:13px;background:#fff;width:240px"></sc-if>
       <a href="Metavista Store.dc.html" style="border:1.5px solid #141414;color:#141414;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700">Открыть магазин ↗</a>
     </div>
   </div>
@@ -72,7 +88,7 @@ button{cursor:pointer}
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px"><span style="font-size:12px;color:#8E8E8E;font-weight:600">{{ k.label }}</span><strong style="display:block;font-size:28px;font-weight:800;margin:6px 0 4px;letter-spacing:-.02em">{{ k.value }}</strong><span style="font-size:12px;font-weight:700;color:{{ k.deltaColor }}">{{ k.delta }}</span><span style="font-size:12px;color:#8E8E8E"> к прошлым 30 дням</span></div>
       </sc-for>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:22px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;margin-bottom:22px">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <div style="display:flex;justify-content:space-between;margin-bottom:14px"><strong style="font-size:14px">Выручка · последние 14 дней</strong><span style="font-size:12px;color:#8E8E8E">USD</span></div>
         <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
@@ -89,7 +105,7 @@ button{cursor:pointer}
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong style="font-size:14px">Требует внимания</strong></div>
         <div style="display:grid;gap:8px">
@@ -127,6 +143,7 @@ button{cursor:pointer}
   </sc-if>
 
   <!-- ORDER DETAIL -->
+  <sc-if value="{{ orderMissing }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:32px;text-align:center"><strong style="display:block;font-size:16px;margin-bottom:6px">Заказ не найден</strong><span style="color:#8E8E8E;font-size:13px">Проверьте номер или вернитесь к <a href="#/orders">списку заказов</a>.</span></div></sc-if>
   <sc-if value="{{ isOrder }}" hint-placeholder-val="{{ false }}">
     <a href="#/orders" style="font-size:12.5px;font-weight:700;color:#8E8E8E">← Все заказы</a>
     <div class="adm-split" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;margin-top:14px;align-items:start">
@@ -148,7 +165,7 @@ button{cursor:pointer}
             <div><div style="aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,#DDD7D0 0 12px,#E9E3DC 12px 24px)"></div><span style="font-size:11.5px;color:#8E8E8E;display:block;margin-top:6px">Загрузка клиента</span></div>
             <div><div style="aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,#F7B21B 0 12px,#F26A1B 12px 24px)"></div><span style="font-size:11.5px;color:#8E8E8E;display:block;margin-top:6px">Улучшенный макет</span></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap"><span style="font-size:12.5px;color:#4A4A4A">Статус макета: <strong style="color:{{ order.proofColor }}">{{ order.proofLabel }}</strong></span><div style="display:flex;gap:8px"><button onClick="{{ sendProof }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700">Отправить макет клиенту</button><button onClick="{{ approveProof }}" style="border:0;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Отметить согласованным</button></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap"><span style="font-size:12.5px;color:#4A4A4A">Статус макета: <strong style="color:{{ order.proofColor }}">{{ order.proofLabel }}</strong></span><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ sendProof }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700">Отправить макет клиенту</button><button onClick="{{ approveProof }}" style="border:0;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Отметить согласованным</button></div></div>
         </div>
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <strong style="font-size:14px;display:block;margin-bottom:12px">История</strong>
@@ -181,7 +198,7 @@ button{cursor:pointer}
   <!-- S.HD QUEUE -->
   <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
     <p style="margin:0 0 16px;color:#4A4A4A;font-size:13.5px">Каждое загруженное фото проверяется перед печатью. Одобрите улучшенную версию, оставьте оригинал или запросите файл получше.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px">
       <sc-for list="{{ queue }}" as="qi" hint-placeholder-count="4">
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12.5px"><a href="{{ qi.href }}" style="font-weight:800;color:#141414">{{ qi.orderId }}</a><span style="color:#8E8E8E">{{ qi.product }} · {{ qi.size }}</span></div>
@@ -213,13 +230,13 @@ button{cursor:pointer}
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
           <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>КОД</span><span>РАЗМЕР</span><span>В СМ</span><span>ЦЕНА $</span><span>СТАРАЯ ЦЕНА $</span><span>НАЛИЧИЕ</span></div>
           <sc-for list="{{ curSizes }}" as="s" hint-placeholder-count="3">
-            <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid #EFEBE6;font-size:13px"><strong>{{ s.code }}</strong><span style="white-space:nowrap">{{ s.dim }}</span><span style="color:#8E8E8E;white-space:nowrap">{{ s.cm }}</span><input value="{{ s.price }}" onChange="{{ s.setPrice }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><input value="{{ s.compare }}" onChange="{{ s.setCompare }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><span style="font-weight:700;color:#1E8E3E">Под заказ</span></div>
+            <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid #EFEBE6;font-size:13px"><strong>{{ s.code }}</strong><span style="white-space:nowrap">{{ s.dim }}</span><span style="color:#8E8E8E;white-space:nowrap">{{ s.cm }}</span><input value="{{ s.price }}" onChange="{{ s.setPrice }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><input value="{{ s.compare }}" onChange="{{ s.setCompare }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Старая цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><span style="font-weight:700;color:#1E8E3E">Под заказ</span></div>
           </sc-for>
         </div>
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <strong style="font-size:14px;display:block;margin-bottom:12px">Доп. опции</strong>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
-            <sc-for list="{{ addons }}" as="a" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ a.t }}<div style="display:flex;align-items:center;gap:6px;margin-top:6px"><span style="color:#8E8E8E">+$</span><input value="{{ a.price }}" onChange="{{ a.set }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:7px 10px;font-size:13px;width:80px"></div></label></sc-for>
+            <sc-for list="{{ addons }}" as="a" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ a.t }}<div style="display:flex;align-items:center;gap:6px;margin-top:6px"><span style="color:#8E8E8E">+$</span><input value="{{ a.price }}" onChange="{{ a.set }}" type="number" min="0" step="0.01" inputmode="decimal" style="border:1px solid #E8E4DF;border-radius:10px;padding:7px 10px;font-size:13px;width:80px"></div></label></sc-for>
           </div>
         </div>
         <div style="display:flex;justify-content:flex-end"><button onClick="{{ savePricing }}" style="border:0;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;background:#141414">Сохранить изменения</button></div>
@@ -250,7 +267,7 @@ button{cursor:pointer}
   <sc-if value="{{ isReviews }}" hint-placeholder-val="{{ false }}">
     <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
       <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="8">
-        <div style="display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6">
+        <div class="adm-row" style="display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6">
           <div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ r.c1 }} 0 8px,{{ r.c2 }} 8px 16px)"></div>
           <div style="min-width:0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="color:#F7B21B;font-size:11px;letter-spacing:2px">★★★★★</span><strong style="font-size:13.5px">{{ r.t }}</strong><span style="font-size:11.5px;color:#8E8E8E">{{ r.who }} · {{ r.where }}</span></div><p style="margin:4px 0 0;font-size:12.5px;color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.d }}</p></div>
           <div style="display:flex;gap:6px;align-items:center"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ r.badgeBg }};color:{{ r.badgeColor }}">{{ r.badge }}</span><button onClick="{{ r.toggle }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">{{ r.action }}</button><button onClick="{{ r.feature }}" style="border:1.5px solid {{ r.featBorder }};background:{{ r.featBg }};color:{{ r.featColor }};border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">★ Избранный</button></div>
@@ -261,20 +278,20 @@ button{cursor:pointer}
 
   <!-- PROMOTIONS -->
   <sc-if value="{{ isPromos }}" hint-placeholder-val="{{ false }}">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:start">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;align-items:start">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <strong style="font-size:14px;display:block;margin-bottom:4px">Автоматическая скидка за комплект</strong><p style="margin:0 0 14px;font-size:12.5px;color:#8E8E8E">Применяется при оформлении по количеству принтов. Показывается в промо-полосе.</p>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-          <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ t.label }}<div style="display:flex;align-items:center;gap:4px;margin-top:6px"><input value="{{ t.pct }}" onChange="{{ t.set }}" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:14px;font-weight:800;width:64px"><span style="color:#8E8E8E">%</span></div></label></sc-for>
+          <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ t.label }}<div style="display:flex;align-items:center;gap:4px;margin-top:6px"><input value="{{ t.pct }}" onChange="{{ t.set }}" type="number" min="0" max="90" inputmode="numeric" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:14px;font-weight:800;width:64px"><span style="color:#8E8E8E">%</span></div></label></sc-for>
         </div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin-top:14px"><input type="checkbox" checked="{{ promoBarOn }}" onChange="{{ togglePromoBar }}" style="accent-color:#E8362D;width:16px;height:16px">Показывать промо-полосу в магазине</label>
         <div style="margin-top:14px;background:#141414;color:#fff;border-radius:10px;padding:9px 14px;font-size:11.5px;font-weight:600;letter-spacing:.04em">{{ promoPreview }}</div>
       </div>
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <strong style="font-size:14px;display:block;margin-bottom:12px">Промокоды</strong>
-        <form onSubmit="{{ addCode }}" style="display:grid;grid-template-columns:1.3fr .8fr auto;gap:8px;margin-bottom:14px"><input value="{{ newCode }}" onChange="{{ setNewCode }}" placeholder="КОД" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;text-transform:uppercase"><input value="{{ newPct }}" onChange="{{ setNewPct }}" placeholder="% скидки" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button type="submit" style="border:0;border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Добавить</button></form>
+        <form onSubmit="{{ addCode }}" style="display:grid;grid-template-columns:1.3fr .8fr auto;gap:8px;margin-bottom:14px"><input value="{{ newCode }}" onChange="{{ setNewCode }}" placeholder="КОД" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;text-transform:uppercase"><input value="{{ newPct }}" onChange="{{ setNewPct }}" placeholder="% скидки" required type="number" min="1" max="100" inputmode="numeric" style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button type="submit" style="border:0;border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Добавить</button></form>
         <div style="display:grid;gap:8px">
-          <sc-for list="{{ codes }}" as="c" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #EFEBE6;border-radius:12px;font-size:13px"><span><code style="font-weight:800;letter-spacing:.08em">{{ c.code }}</code><span style="display:block;font-size:11.5px;color:#8E8E8E">{{ c.uses }} исп. · {{ c.source }}</span></span><strong>{{ c.pct }}%</strong><button onClick="{{ c.toggle }}" style="border:1.5px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700">{{ c.state }}</button><button onClick="{{ c.remove }}" style="border:0;background:none;color:#8E8E8E;font-size:16px">×</button></div></sc-for>
+          <sc-for list="{{ codes }}" as="c" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #EFEBE6;border-radius:12px;font-size:13px"><span><code style="font-weight:800;letter-spacing:.08em">{{ c.code }}</code><span style="display:block;font-size:11.5px;color:#8E8E8E">{{ c.uses }} исп. · {{ c.source }}</span></span><strong>{{ c.pct }}%</strong><button onClick="{{ c.toggle }}" style="border:1.5px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700">{{ c.state }}</button><button onClick="{{ c.remove }}" aria-label="Удалить промокод" style="border:0;background:none;color:#8E8E8E;font-size:18px;min-width:36px;min-height:36px">×</button></div></sc-for>
         </div>
       </div>
     </div>
@@ -291,6 +308,7 @@ button{cursor:pointer}
           <span><sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:#FFF4E5;color:#B84A0E">{{ c.tag }}</span></sc-if></span>
         </a>
       </sc-for>
+      <sc-if value="{{ customersEmpty }}" hint-placeholder-val="{{ false }}"><p style="padding:40px;text-align:center;color:#8E8E8E;margin:0">Клиентов не найдено.</p></sc-if>
     </div>
   </sc-if>
 
@@ -319,7 +337,7 @@ button{cursor:pointer}
       <div style="display:grid;gap:10px">
         <sc-for list="{{ faqRows }}" as="f" hint-placeholder-count="8">
           <div style="background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:14px 18px">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><input value="{{ f.q }}" onChange="{{ f.setQ }}" style="flex:1;border:0;font-size:14px;font-weight:700;background:none;padding:4px 0"><button onClick="{{ f.toggle }}" style="border:0;background:none;color:#8E8E8E;font-size:12.5px;font-weight:700">{{ f.toggleLabel }}</button><button onClick="{{ f.remove }}" style="border:0;background:none;color:#8E8E8E;font-size:16px">×</button></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><input value="{{ f.q }}" onChange="{{ f.setQ }}" style="flex:1;border:0;font-size:14px;font-weight:700;background:none;padding:4px 0"><button onClick="{{ f.toggle }}" style="border:0;background:none;color:#8E8E8E;font-size:12.5px;font-weight:700">{{ f.toggleLabel }}</button><button onClick="{{ f.remove }}" aria-label="Удалить вопрос" style="border:0;background:none;color:#8E8E8E;font-size:18px;min-width:36px;min-height:36px">×</button></div>
             <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><textarea value="{{ f.a }}" onChange="{{ f.setA }}" rows="3" style="width:100%;margin-top:8px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea></sc-if>
           </div>
         </sc-for>
@@ -328,7 +346,7 @@ button{cursor:pointer}
     </sc-if>
     <sc-if value="{{ contentBlog }}" hint-placeholder-val="{{ false }}">
       <div style="display:grid;gap:10px">
-        <sc-for list="{{ postRows }}" as="p" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:64px minmax(0,1fr) auto auto;gap:14px;align-items:center;background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:12px 16px"><div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 8px,{{ p.c2 }} 8px 16px)"></div><div style="min-width:0"><strong style="font-size:13.5px;display:block">{{ p.t }}</strong><span style="font-size:12px;color:#8E8E8E">{{ p.date }} · {{ p.d }}</span></div><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ p.bg }};color:{{ p.color }}">{{ p.state }}</span><button onClick="{{ p.toggle }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">{{ p.action }}</button></div></sc-for>
+        <sc-for list="{{ postRows }}" as="p" hint-placeholder-count="4"><div class="adm-row" style="display:grid;grid-template-columns:64px minmax(0,1fr) auto auto;gap:14px;align-items:center;background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:12px 16px"><div style="aspect-ratio:1;border-radius:10px;background:repeating-linear-gradient(135deg,{{ p.c1 }} 0 8px,{{ p.c2 }} 8px 16px)"></div><div style="min-width:0"><strong style="font-size:13.5px;display:block">{{ p.t }}</strong><span style="font-size:12px;color:#8E8E8E">{{ p.date }} · {{ p.d }}</span></div><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ p.bg }};color:{{ p.color }}">{{ p.state }}</span><button onClick="{{ p.toggle }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700">{{ p.action }}</button></div></sc-for>
         <button onClick="{{ addPost }}" style="border:1.5px dashed #C9C2BA;background:none;border-radius:16px;padding:14px;font-size:13px;font-weight:700;color:#4A4A4A">+ Новый черновик</button>
       </div>
     </sc-if>
@@ -345,7 +363,7 @@ button{cursor:pointer}
   <!-- SITE SECTIONS -->
   <sc-if value="{{ isSections }}" hint-placeholder-val="{{ false }}">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-      <p style="margin:0;font-size:13px;color:#4A4A4A;max-width:620px;line-height:1.55">Включайте и выключайте блоки магазина. Скрытые блоки остаются в коде — их можно вернуть в любой момент. Изменения сразу применяются в магазине (если он открыт в этом же браузере).</p>
+      <p style="margin:0;font-size:13px;color:#4A4A4A;max-width:620px;line-height:1.55">Включайте и выключайте блоки магазина. Скрытые блоки остаются в коде — их можно вернуть в любой момент. Изменения сразу применяются в магазине, открытом <strong>в этом же браузере</strong>. Покупатели пока видят настройки по умолчанию — чтобы изменения увидели все, их нужно перенести в код (попросите Claude).</p>
       <div style="display:flex;gap:8px"><button onClick="{{ featuresReset }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:700">Сбросить по умолчанию</button><button onClick="{{ featuresAllOn }}" style="border:0;border-radius:999px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Показать всё</button></div>
     </div>
     <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px 18px;margin-bottom:14px">
@@ -354,7 +372,7 @@ button{cursor:pointer}
       <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="shd-endpoint" value="{{ shdEndpoint }}" onChange="{{ setShdEndpoint }}" placeholder="https://your-server.example/enhance" style="flex:1 1 260px;min-width:0;border:1px solid #E8E4DF;border-radius:12px;padding:11px 14px;font-size:13px"><button onClick="{{ saveShdEndpoint }}" style="border:0;border-radius:999px;padding:11px 18px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Сохранить</button></div>
       <p style="margin:8px 0 0;font-size:12px;color:#6B6B6B">Сейчас: <strong style="color:#141414">{{ shdModeLabel }}</strong></p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px;align-items:start">
       <sc-for list="{{ featureGroups }}" as="g" hint-placeholder-count="6">
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px 18px">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><strong style="font-size:14px">{{ g.name }}</strong><span style="font-size:11.5px;color:#8E8E8E;font-weight:600">{{ g.count }}</span></div>
@@ -375,6 +393,7 @@ button{cursor:pointer}
   <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#141414;color:#fff;border-radius:999px;padding:12px 20px;font-size:13px;font-weight:700;z-index:80;box-shadow:0 12px 30px rgba(20,20,20,.3);animation:mv-in .2s ease">{{ toast }}</div>
 </sc-if>
 </x-dc>
+<div class="mv-skel" aria-hidden="true"><img src="./assets/logo-mark-2x.png" alt=""></div>
 <script type="text/x-dc" data-dc-script>
 const FEATURES = [
   ['Общее','promoBar','Промо-полоса (бегущая строка сверху)',false],
@@ -408,7 +427,7 @@ const FEATURES = [
   ['Подвал','foot_finishes','Сравнение покрытий (Compare Finishes)',false],
   ['Подвал','foot_policy','Колонка «Policy»',true],
   ['Подвал','foot_contact','Колонка «Get in touch»',true],
-  ['Подвал','foot_social','Колонка «Follow us»',true],
+  ['Подвал','foot_social','Колонка «Follow us»',false],
   ['Подвал','foot_newsletter','Кнопка подписки',false],
   ['Работа с фото','photo_autoRatio','Автовыбор пропорций при загрузке',true],
   ['Работа с фото','photo_rotate','Кнопка поворота',true],
@@ -478,13 +497,21 @@ const POSTS = [['Aug 28, 2026','How to build a gallery wall with hexagons','Layo
 const POLICIES = { privacy:{ label:'Privacy Policy', updated:'Aug 2', sections:[['What we collect','Contact details, order information and the images you upload for printing.'],['How we use it','To produce and ship your order, provide support and, with consent, send offers.'],['Image deletion','Uploaded photos are automatically deleted after printing is complete.'],['Your rights','Request access, correction or deletion at support@metavista.com.']] }, refund:{ label:'Refund Policy', updated:'Jul 19', sections:[['Custom products','Because every print is made to order, we cannot accept returns for change of mind.'],['Damaged or defective','Contact us within 14 days with photos; we reprint or refund at no cost.'],['Wrong image uploaded','Contact us before production starts to swap the file.'],['Processing','Refunds return to the original payment method within 5–10 business days.']] }, shipping:{ label:'Shipping Policy', updated:'Jun 30', sections:[['Production','2–3 business days before dispatch.'],['Transit times','Standard 10–14 business days; Expedited 5–9 business days.'],['Coverage','49 countries and regions. Remote-area surcharges may apply.'],['Tracking','A tracking number is emailed on dispatch.']] }, terms:{ label:'Terms of Service', updated:'May 12', sections:[['Your content','You confirm you hold the rights to any image you upload.'],['Proofs','For screenshot-based orders we email a preview for approval before production.'],['Pricing','Bundle discounts apply automatically; codes cannot be combined.'],['Liability','Our liability is limited to the value of the order.']] } };
 const fmtDate = d => { const dt = new Date(2026, 8, 15 - d); return dt.toLocaleDateString('ru-RU', { month:'short', day:'numeric' }); };
 
+const SAVED_KEYS = ['orders','queue','products','addons','wall','reviews','tiers','promoBarOn','codes','faqs','posts','policies'];
+const loadSaved = () => { try { return JSON.parse(localStorage.getItem('mv_admin') || '{}'); } catch (e) { return {}; } };
+const minPrice = sizes => { const v = sizes.map(s => +s.price).filter(x => x > 0); return v.length ? Math.min(...v) : 0; }; // ignores empty / invalid prices
+const ask = t => { try { return window.confirm(t); } catch (e) { return true; } };
 class Component extends DCLogic {
   constructor(p) { super(p);
     this.state = { route:this.parseHash(), q:'', toast:'', statusFilter:'all', orders:ORDERS, queue:QUEUE, products:PRODUCTS, curProd:'classic', addons:[['Парящее 3D-крепление','10.00'],['Магнит Wall-Safe','20.00'],['Комплект магнитного крепления (отдельно)','19.99']].map(a => ({ t:a[0], price:a[1] })),
       wall:WALL, wallTab:'pending', reviews:REVIEWS, tiers:['10','25','35'], promoBarOn:true, codes:[{ code:'WELCOME15', pct:15, uses:412, source:'Попап подписки', active:true },{ code:'WALLFAME20', pct:20, uses:37, source:'Награда Wall of Fame', active:true },{ code:'STELLARIS10', pct:10, uses:128, source:'Партнёр', active:false }], newCode:'', newPct:'',
-      features: loadFeatures(), settings: (() => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } })(), shdDraft: null, contentTab:'faq', faqs:FAQS, faqOpen:-1, posts:POSTS, policyKey:'privacy', policies:POLICIES }; }
+      features: loadFeatures(), settings: (() => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } })(), shdDraft: null, contentTab:'faq', faqs:FAQS, faqOpen:-1, posts:POSTS, policyKey:'privacy', policies:POLICIES };
+    const saved = loadSaved(); for (const k of SAVED_KEYS) if (saved[k] !== undefined) this.state[k] = saved[k];
+    this._savedJson = JSON.stringify(this.pickSaved()); }
+  pickSaved() { return Object.fromEntries(SAVED_KEYS.map(k => [k, this.state[k]])); }
+  componentDidUpdate() { const j = JSON.stringify(this.pickSaved()); if (j !== this._savedJson) { this._savedJson = j; try { localStorage.setItem('mv_admin', j); } catch (e) {} } }
   parseHash() { const h = (location.hash || '#/').replace(/^#\/?/, ''); const [page, param] = h.split('/'); return { page: page || 'dash', param: param || '' }; }
-  componentDidMount() { this._onHash = () => { this.setState({ route:this.parseHash() }); window.scrollTo(0, 0); }; window.addEventListener('hashchange', this._onHash); }
+  componentDidMount() { this._onHash = () => { this.setState({ route:this.parseHash(), q:'' }); window.scrollTo(0, 0); }; window.addEventListener('hashchange', this._onHash); }
   componentWillUnmount() { window.removeEventListener('hashchange', this._onHash); clearTimeout(this._t); }
   setFeatures(features) { try { localStorage.setItem('mv_features', JSON.stringify(features)); } catch (e) {} this.setState({ features }); }
   toast(t) { this.setState({ toast:t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast:'' }), 2200); }
@@ -503,11 +530,11 @@ class Component extends DCLogic {
     const pagesAll = [['dash','Сводка',0],['orders','Заказы',pendingProof],['queue','Очередь S.HD',queuePending],['products','Товары и цены',0],['wall','Wall of Fame',wallPending],['reviews','Отзывы',S.reviews.filter(r => !r.published).length],['promos','Акции',0],['customers','Клиенты',0],['content','Контент',0],['sections','Разделы сайта',0]];
     const pages = pagesAll.filter(pg => !(pg[0] === 'wall' && !S.features.nav_wall) && !(pg[0] === 'queue' && !S.features.shd_enhance));
     const pageKey = route.page === 'order' ? 'orders' : route.page === 'customer' ? 'customers' : route.page;
-    const cur = pagesAll.find(p => p[0] === pageKey) || pagesAll[0];
+    const known = pagesAll.some(p => p[0] === pageKey), cur = pagesAll.find(p => p[0] === pageKey) || pagesAll[0];
     const active = S.orders.filter(o => o.statusKey !== 'refunded');
     const revenue = active.reduce((a, o) => a + o.total, 0);
     const seed = [420,610,380,720,910,560,640,1120,830,690,980,1240,760,1010];
-    const order = all.find(o => o.id === route.param) || all[0];
+    const orderFound = all.find(o => o.id === route.param), order = orderFound || all[0];
     const cust = CUSTOMERS.find(c => String(c.id) === route.param) || CUSTOMERS[0];
     const custOrders = id => all.filter(o => o.custId === id);
     const filtered = all.filter(o => (S.statusFilter === 'all' || o.statusKey === S.statusFilter) && (!q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q) || o.itemsLabel.toLowerCase().includes(q)));
@@ -524,61 +551,65 @@ class Component extends DCLogic {
       shdModeLabel: S.settings.shdEndpoint ? 'сервер · ' + S.settings.shdEndpoint : 'улучшение в браузере',
       featuresReset: () => { this.setFeatures({ ...FEATURE_DEFAULTS }); this.toast('Настройки по умолчанию восстановлены'); }, featuresAllOn: () => { this.setFeatures(Object.fromEntries(FEATURES.map(f => [f.key, true]))); this.toast('Все разделы включены'); },
       navItems: pages.map(p => ({ label:p[1], href:'#/' + p[0], badge: p[2] || 0, color: p[0] === pageKey ? '#fff' : '#B9B4AE', bg: p[0] === pageKey ? 'rgba(255,255,255,.1)' : 'transparent' })),
-      pageKicker: 'METAVISTA · АДМИНКА', pageTitle: route.page === 'order' ? 'Заказ ' + order.id : route.page === 'customer' ? cust.name : cur[1],
+      pageKicker: 'METAVISTA · АДМИНКА', pageTitle: route.page === 'order' ? 'Заказ ' + (orderFound ? order.id : route.param) : route.page === 'customer' ? cust.name : cur[1],
       q:S.q, setQ: e => this.setState({ q:e.target.value }), toast:S.toast,
-      isDash: pageKey === 'dash', isOrders: route.page === 'orders', isOrder: route.page === 'order', isQueue: route.page === 'queue', isProducts: route.page === 'products', isWall: route.page === 'wall', isReviews: route.page === 'reviews', isPromos: route.page === 'promos', isCustomers: route.page === 'customers', isCustomer: route.page === 'customer', isContent: route.page === 'content', isSections: route.page === 'sections',
+      showSearch: route.page === 'orders' || route.page === 'customers', searchPh: route.page === 'customers' ? 'Поиск клиентов…' : 'Поиск заказов…',
+      isDash: pageKey === 'dash' || !known, isOrders: route.page === 'orders', isOrder: route.page === 'order' && !!orderFound, orderMissing: route.page === 'order' && !orderFound, isQueue: route.page === 'queue', isProducts: route.page === 'products', isWall: route.page === 'wall', isReviews: route.page === 'reviews', isPromos: route.page === 'promos', isCustomers: route.page === 'customers', isCustomer: route.page === 'customer', isContent: route.page === 'content', isSections: route.page === 'sections',
       // dashboard
-      kpis: [{ label:'Выручка · 30 дней', value:'$' + money(revenue * 3.4).replace(/\.\d+$/, ''), delta:'+18.2%', deltaColor:'#1E8E3E' },{ label:'Заказы', value: String(active.length * 4), delta:'+11.5%', deltaColor:'#1E8E3E' },{ label:'Средний чек', value:'$' + money(revenue / active.length), delta:'+4.1%', deltaColor:'#1E8E3E' },{ label:'Конверсия', value:'2.8%', delta:'−0.3 п.п.', deltaColor:'#C0262D' }],
+      kpis: [{ label:'Выручка · 30 дней', value:'$' + money(revenue * 3.4).replace(/\.\d+$/, ''), delta:'+18.2%', deltaColor:'#1E8E3E' },{ label:'Заказы', value: String(active.length * 4), delta:'+11.5%', deltaColor:'#1E8E3E' },{ label:'Средний чек', value:'$' + money(active.length ? revenue / active.length : 0), delta:'+4.1%', deltaColor:'#1E8E3E' },{ label:'Конверсия', value:'2.8%', delta:'−0.3 п.п.', deltaColor:'#C0262D' }],
       revBars: seed.map((v, i) => ({ h: Math.round(v / 1240 * 100), bg: i === 13 ? 'linear-gradient(180deg,#F7B21B,#E8362D)' : '#E8E4DF', title:'$' + v })),
       byProduct: byProd.map(b => ({ ...b, rev: money(b.rev), pct: Math.round(b.rev / maxRev * 100) })),
-      attention: [{ t:'Заказы ждут согласования макета', n:pendingProof, href:'#/orders' },{ t:'Фото в очереди проверки S.HD', n:queuePending, href:'#/queue' },{ t:'Заявки Wall of Fame на модерацию', n:wallPending, href:'#/wall' },{ t:'Отзывы ждут публикации', n:S.reviews.filter(r => !r.published).length, href:'#/reviews' }],
+      attention: [{ t:'Заказы ждут согласования макета', n:pendingProof, href:'#/orders' }, ...(S.features.shd_enhance ? [{ t:'Фото в очереди проверки S.HD', n:queuePending, href:'#/queue' }] : []), ...(S.features.nav_wall ? [{ t:'Заявки Wall of Fame на модерацию', n:wallPending, href:'#/wall' }] : []),{ t:'Отзывы ждут публикации', n:S.reviews.filter(r => !r.published).length, href:'#/reviews' }],
       recentOrders: all.slice(0, 5),
       // orders
       statusTabs: [['all','Все'], ...Object.keys(STATUS).map(k => [k, STATUS[k][0]])].map(t => ({ label:t[1], n: t[0] === 'all' ? all.length : all.filter(o => o.statusKey === t[0]).length, ...pill(S.statusFilter === t[0]), pick: () => this.setState({ statusFilter:t[0] }) })),
       orders: filtered, ordersEmpty: filtered.length === 0,
       order: { ...order, items: order.items.map((i, k) => ({ ...i, line: money(i.price * i.qty), c1: ph(k)[0], c2: ph(k)[1] })), proofLabel: order.proof === 'approved' ? 'Согласован клиентом' : order.proof === 'sent' ? 'Отправлен — ждём ответа' : 'Не отправлен', proofColor: order.proof === 'approved' ? '#1E8E3E' : '#B84A0E',
         timeline: [['Заказ оформлен', fmtDate(order.daysAgo) + ' · ' + order.payment],['Фото получено', fmtDate(order.daysAgo)], ...(order.proof !== 'pending' ? [['Макет отправлен клиенту', fmtDate(order.daysAgo)]] : []), ...(order.proof === 'approved' ? [['Макет согласован', fmtDate(Math.max(0, order.daysAgo - 1))]] : []), ...(order.tracking ? [['Отправлен · ' + order.tracking, fmtDate(Math.max(0, order.daysAgo - 2))]] : [])].map(t => ({ t:t[0], d:t[1] })),
-        address: cust.name + '\n' + 'ул. Примерная, 12\n' + cust.country },
+        address: CUSTOMERS[order.custId].name + '\n' + 'ул. Примерная, 12\n' + CUSTOMERS[order.custId].country },
       statusList: Object.keys(STATUS).map(k => ({ key:k, label:STATUS[k][0] })),
       setOrderStatus: e => { this.updOrder(order.id, { statusKey:e.target.value }); this.toast('Статус обновлён · клиент уведомлён'); },
       setTracking: e => this.updOrder(order.id, { tracking:e.target.value }), saveTracking: () => this.toast('Трек-номер сохранён · письмо об отправке ушло'), setAdminNote: e => this.updOrder(order.id, { adminNote:e.target.value }),
       sendProof: () => { this.updOrder(order.id, { proof:'sent' }); this.toast('Макет отправлен на ' + order.email); }, approveProof: () => { this.updOrder(order.id, { proof:'approved', statusKey: order.statusKey === 'pending' || order.statusKey === 'review' ? 'production' : order.statusKey }); this.toast('Макет согласован · заказ передан в производство'); },
-      refundOrder: () => { this.updOrder(order.id, { statusKey:'refunded' }); this.toast('Возврат оформлен'); }, resendEmail: () => this.toast('Письмо отправлено'),
+      refundOrder: () => { if (!ask(`Оформить возврат по заказу ${order.id} на $${order.total}?`)) return; this.updOrder(order.id, { statusKey:'refunded' }); this.toast('Возврат оформлен'); }, resendEmail: () => this.toast('Письмо отправлено'),
       // queue
       queue: S.queue.map(x => ({ ...x, href:'#/order/' + x.orderId, pending: x.state === 'pending', done: x.state !== 'pending', doneLabel: x.state === 'approved' ? 'Улучшенная версия одобрена' : x.state === 'kept' ? 'Оставлен оригинал' : 'У клиента запрошен файл получше',
         approve: () => upd('queue', x.id, { state:'approved' }), keep: () => upd('queue', x.id, { state:'kept' }), request: () => { upd('queue', x.id, { state:'requested' }); this.toast('Запрос отправлен клиенту'); } })),
       // products
-      productList: S.products.map(p => ({ ...p, visible: !!S.features['prod_' + p.id], from: money(Math.min(...p.sizes.map(s => +s.price))), visLabel: S.features['prod_' + p.id] ? 'Показан' : 'Скрыт', border: border(p.id === S.curProd), pick: () => this.setState({ curProd:p.id }) })),
+      productList: S.products.map(p => ({ ...p, visible: !!S.features['prod_' + p.id], from: money(minPrice(p.sizes)), visLabel: S.features['prod_' + p.id] ? 'Показан' : 'Скрыт', border: border(p.id === S.curProd), pick: () => this.setState({ curProd:p.id }) })),
       curProduct: { ...curProduct, visible: !!S.features['prod_' + curProduct.id] }, toggleVisible: e => this.setFeatures({ ...S.features, ['prod_' + curProduct.id]: e.target.checked }), setProdName: e => this.updProd(curProduct.id, { name:e.target.value }), setBadge: e => this.updProd(curProduct.id, { badge:e.target.value }),
       curSizes: curProduct.sizes.map((s, i) => ({ ...s, setPrice: e => this.updProd(curProduct.id, { sizes: curProduct.sizes.map((x, k) => k === i ? { ...x, price:e.target.value } : x) }), setCompare: e => this.updProd(curProduct.id, { sizes: curProduct.sizes.map((x, k) => k === i ? { ...x, compare:e.target.value } : x) }) })),
       addons: S.addons.map((a, i) => ({ ...a, set: e => this.setState(s => ({ addons: s.addons.map((x, k) => k === i ? { ...x, price:e.target.value } : x) })) })),
-      savePricing: () => this.toast('Цены опубликованы в магазине'),
+      savePricing: () => this.toast('Сохранено в этом браузере · в магазин пока не передаётся'),
       // wall
       wallTabs: [['pending','На модерации'],['approved','Опубликованы'],['rejected','Отклонены']].map(t => ({ label:t[1], n:S.wall.filter(w => w.state === t[0]).length, ...pill(S.wallTab === t[0]), pick: () => this.setState({ wallTab:t[0] }) })),
       wallItems: wallItems.map(w => ({ ...w, isPending: w.state === 'pending', isApproved: w.state === 'approved', isRejected: w.state === 'rejected', unpaid: !w.paid, payLabel: w.paid ? 'выплачено' : 'не выплачено',
-        approve: () => { upd('wall', w.id, { state:'approved', paid:true }); this.toast('Одобрено · $20 отправлено: ' + w.author); }, reject: () => upd('wall', w.id, { state:'rejected' }), pay: () => { upd('wall', w.id, { paid:true }); this.toast('Награда $20 отправлена'); } })),
+        approve: () => { if (!ask(`Одобрить «${w.title}» и выплатить $20 автору (${w.author})?`)) return; upd('wall', w.id, { state:'approved', paid:true }); this.toast('Одобрено · $20 отправлено: ' + w.author); }, reject: () => { if (!ask(`Отклонить «${w.title}»?`)) return; upd('wall', w.id, { state:'rejected' }); }, pay: () => { if (!ask(`Выплатить $20 автору (${w.author})?`)) return; upd('wall', w.id, { paid:true }); this.toast('Награда $20 отправлена'); } })),
       // reviews
       reviewRows: S.reviews.map(r => ({ ...r, badge: r.published ? 'ОПУБЛИКОВАН' : 'НА ПРОВЕРКЕ', badgeBg: r.published ? '#E8F5EC' : '#FFF4E5', badgeColor: r.published ? '#1E8E3E' : '#B84A0E', action: r.published ? 'Снять' : 'Опубликовать', toggle: () => upd('reviews', r.id, { published:!r.published }),
         featBorder: r.featured ? '#E8362D' : '#E8E4DF', featBg: r.featured ? '#E8362D' : '#fff', featColor: r.featured ? '#fff' : '#8E8E8E', feature: () => upd('reviews', r.id, { featured:!r.featured }) })),
       // promos
-      tiers: [['1 принт'],['2 принта'],['3+ принта']].map((t, i) => ({ label:t[0], pct:S.tiers[i], set: e => this.setState(s => ({ tiers: s.tiers.map((x, k) => k === i ? e.target.value : x) })) })),
+      tiers: [['1 принт'],['2 принта'],['3+ принта']].map((t, i) => ({ label:t[0], pct:S.tiers[i], set: e => { const v = String(Math.max(0, Math.min(90, Math.round(+e.target.value || 0)))); this.setState(s => ({ tiers: s.tiers.map((x, k) => k === i ? v : x) })); } })),
       promoBarOn:S.features.promoBar, togglePromoBar: e => this.setFeatures({ ...S.features, promoBar:e.target.checked }), promoPreview: S.features.promoBar ? `EXCLUSIVE OFFER · ${S.tiers[0]}% OFF 1 PRINT · ${S.tiers[1]}% OFF 2+ PRINTS · ${S.tiers[2]}% OFF 3+ PRINTS` : 'Промо-полоса скрыта',
       newCode:S.newCode, newPct:S.newPct, setNewCode: e => this.setState({ newCode:e.target.value.toUpperCase() }), setNewPct: e => this.setState({ newPct:e.target.value }),
-      addCode: e => { e.preventDefault(); this.setState(s => ({ codes:[{ code:s.newCode, pct:+s.newPct || 0, uses:0, source:'Вручную', active:true }, ...s.codes], newCode:'', newPct:'' })); this.toast('Промокод создан'); },
-      codes: S.codes.map((c, i) => ({ ...c, state: c.active ? 'Активен' : 'На паузе', ...pill(c.active), toggle: () => this.setState(s => ({ codes: s.codes.map((x, k) => k === i ? { ...x, active:!x.active } : x) })), remove: () => this.setState(s => ({ codes: s.codes.filter((_, k) => k !== i) })) })),
+      addCode: e => { e.preventDefault(); const code = S.newCode.trim().toUpperCase(), pct = Math.round(+S.newPct);
+        if (!/^[A-Z0-9_-]{3,20}$/.test(code)) { this.toast('Код: 3–20 латинских букв или цифр'); return; } if (!(pct >= 1 && pct <= 100)) { this.toast('Скидка должна быть от 1 до 100 %'); return; } if (S.codes.some(c => c.code === code)) { this.toast('Такой промокод уже есть'); return; }
+        this.setState(s => ({ codes:[{ code, pct, uses:0, source:'Вручную', active:true }, ...s.codes], newCode:'', newPct:'' })); this.toast('Промокод создан'); },
+      codes: S.codes.map((c, i) => ({ ...c, state: c.active ? 'Активен' : 'На паузе', ...pill(c.active), toggle: () => this.setState(s => ({ codes: s.codes.map((x, k) => k === i ? { ...x, active:!x.active } : x) })), remove: () => { if (!ask(`Удалить промокод ${c.code}?`)) return; this.setState(s => ({ codes: s.codes.filter((_, k) => k !== i) })); } })),
       // customers
+      ...(() => { const list = CUSTOMERS.filter(c => !q || c.name.toLowerCase().includes(q) || c.email.includes(q)); return { customersEmpty: list.length === 0 }; })(),
       customers: CUSTOMERS.map(c => { const os = custOrders(c.id); return { ...c, href:'#/customer/' + c.id, orders:os.length, spent: money(os.reduce((a, o) => a + +o.total, 0)), last: os.length ? os[0].date : '—' }; }).filter(c => !q || c.name.toLowerCase().includes(q) || c.email.includes(q)).sort((a, b) => b.spent - a.spent),
       customer: (() => { const os = custOrders(cust.id); return { ...cust, orders:os.length, spent: money(os.reduce((a, o) => a + +o.total, 0)) }; })(), customerOrders: custOrders(cust.id),
       // content
       contentTabs: [['faq','FAQ'],['blog','Блог'],['policies','Политики']].map(t => ({ label:t[1], ...pill(S.contentTab === t[0]), pick: () => this.setState({ contentTab:t[0] }) })),
       contentFaq: S.contentTab === 'faq', contentBlog: S.contentTab === 'blog', contentPolicies: S.contentTab === 'policies',
-      faqRows: S.faqs.map(f => ({ ...f, open: S.faqOpen === f.id, toggleLabel: S.faqOpen === f.id ? 'Свернуть' : 'Изменить ответ', toggle: () => this.setState({ faqOpen: S.faqOpen === f.id ? -1 : f.id }), setQ: e => upd('faqs', f.id, { q:e.target.value }), setA: e => upd('faqs', f.id, { a:e.target.value }), remove: () => this.setState(s => ({ faqs: s.faqs.filter(x => x.id !== f.id) })) })),
+      faqRows: S.faqs.map(f => ({ ...f, open: S.faqOpen === f.id, toggleLabel: S.faqOpen === f.id ? 'Свернуть' : 'Изменить ответ', toggle: () => this.setState({ faqOpen: S.faqOpen === f.id ? -1 : f.id }), setQ: e => upd('faqs', f.id, { q:e.target.value }), setA: e => upd('faqs', f.id, { a:e.target.value }), remove: () => { if (!ask(`Удалить вопрос «${f.q}»?`)) return; this.setState(s => ({ faqs: s.faqs.filter(x => x.id !== f.id) })); } })),
       addFaq: () => this.setState(s => { const id = Date.now(); return { faqs:[...s.faqs, { id, q:'New question', a:'' }], faqOpen:id }; }),
-      postRows: S.posts.map(p => ({ ...p, state: p.published ? 'ОПУБЛИКОВАН' : 'ЧЕРНОВИК', bg: p.published ? '#E8F5EC' : '#EFEBE6', color: p.published ? '#1E8E3E' : '#4A4A4A', action: p.published ? 'Снять' : 'Опубликовать', toggle: () => upd('posts', p.id, { published:!p.published, date: p.published ? 'Черновик' : '15 сент. 2026' }) })),
+      postRows: S.posts.map(p => ({ ...p, state: p.published ? 'ОПУБЛИКОВАН' : 'ЧЕРНОВИК', bg: p.published ? '#E8F5EC' : '#EFEBE6', color: p.published ? '#1E8E3E' : '#4A4A4A', action: p.published ? 'Снять' : 'Опубликовать', toggle: () => upd('posts', p.id, { published:!p.published, date: p.published ? 'Черновик' : new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) }) })),
       addPost: () => this.setState(s => ({ posts:[...s.posts, { id:Date.now(), date:'Черновик', t:'Untitled post', d:'', published:false, c1:'#E6E4E1', c2:'#F0EEEB' }] })),
       policyTabs: Object.keys(S.policies).map(k => ({ label:S.policies[k].label, updated:S.policies[k].updated, border: border(S.policyKey === k), pick: () => this.setState({ policyKey:k }) })),
       policySections: pol.sections.map((s, i) => ({ h:s[0], p:s[1], setH: e => this.setPolicy(i, 0, e.target.value), setP: e => this.setPolicy(i, 1, e.target.value) })),
-      savePolicy: () => { this.setState(s => ({ policies: { ...s.policies, [s.policyKey]: { ...s.policies[s.policyKey], updated:'Sep 15' } } })); this.toast(pol.label + ' — опубликовано'); },
+      savePolicy: () => { this.setState(s => ({ policies: { ...s.policies, [s.policyKey]: { ...s.policies[s.policyKey], updated:'Sep 15' } } })); this.toast(pol.label + ' — сохранено в этом браузере'); },
     };
   }
   setPolicy(i, j, v) { this.setState(s => { const p = s.policies[s.policyKey]; const sections = p.sections.map((sec, k) => k === i ? sec.map((x, m) => m === j ? v : x) : sec); return { policies: { ...s.policies, [s.policyKey]: { ...p, sections } } }; }); }
