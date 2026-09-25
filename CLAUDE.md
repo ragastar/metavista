@@ -2,6 +2,11 @@
 
 Copy of metaleks.com (custom HD metal prints), deliberately trimmed. Owner: Mikhail Levin. UI text is English; talk to the owner in Russian, plain words.
 
+## Repo & deploy
+- GitHub: https://github.com/ragastar/metavista (public). Live site (GitHub Pages from `main`, root): https://ragastar.github.io/metavista/ — `index.html` redirects to the store; admin at `…/Metavista%20Admin.dc.html`. Every push to `main` redeploys in ~1–2 min.
+- Local: preview config `store` in `.claude/launch.json` (`npx serve` on :5173; serve drops `.html` from URLs).
+- Commit after each finished change, then push.
+
 ## Files
 - `Metavista Store.dc.html` — storefront (single file: template inside `<x-dc>`, logic in `<script type="text/x-dc">` class `Component extends DCLogic`, `renderVals()` returns everything the template uses).
 - `Metavista Admin.dc.html` — admin panel, same format. Page "Site sections" (`#/sections`) toggles store features.
