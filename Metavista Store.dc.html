@@ -46,15 +46,15 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
 .wz-4{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
 .wz-side{padding-top:4px}
 .mv-hero{position:sticky;top:124px}
-.mv-search-m{display:none}
 .mv-icon-btn{min-width:40px;min-height:40px;display:inline-flex;align-items:center;justify-content:center}
+.mv-search-m{display:none!important}
 @media (max-width:720px){
   .mv-header{position:static!important}
   .mv-nav{justify-content:flex-start!important;gap:0 2px!important;margin:0 -8px}
   .mv-nav > div > button,.mv-nav > a{padding:9px 8px!important}
   .mv-nav .mv-dd{position:fixed!important;left:12px!important;right:12px;top:auto;min-width:0!important;z-index:45}
   .mv-search{display:none!important}
-  .mv-search-m{display:inline-flex}
+  .mv-search-m{display:inline-flex!important}
   .mv-hdr{gap:6px!important;padding:0 14px!important}
   .mv-logo{font-size:19px!important}
   .mv-hdr-act > a{padding:8px 6px!important}
@@ -272,8 +272,8 @@ form input:not([type=radio]):not([type=checkbox]):not([type=range]),form textare
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div style="aspect-ratio:3/4;border-radius:14px;border:14px solid #5B4636;background:repeating-linear-gradient(135deg,#D9D3CC 0 10px,#E4DED7 10px 20px);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">framed print</div>
-        <div style="aspect-ratio:3/4;border-radius:6px;background:repeating-linear-gradient(135deg,#F3E3D6 0 10px,#F9EEE5 10px 20px);box-shadow:0 20px 40px rgba(20,20,20,.18);display:flex;align-items:flex-end;padding:10px;font-family:ui-monospace,monospace;font-size:10.5px;color:#6B6B6B">metal print</div>
+        <div style="aspect-ratio:3/4;border-radius:14px;border:14px solid #5B4636;background:repeating-linear-gradient(135deg,#D9D3CC 0 10px,#E4DED7 10px 20px);display:flex;align-items:flex-end;padding:10px"><span style="background:rgba(255,255,255,.9);color:#141414;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px">Framed print</span></div>
+        <div style="aspect-ratio:3/4;border-radius:6px;background:repeating-linear-gradient(135deg,#F3E3D6 0 10px,#F9EEE5 10px 20px);box-shadow:0 20px 40px rgba(20,20,20,.18);display:flex;align-items:flex-end;padding:10px"><span style="background:#141414;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px">Metavista metal print</span></div>
       </div>
     </div>
   </section>
@@ -1590,6 +1590,7 @@ class Component extends DCLogic {
   lockScroll(on) { const b = document.body.style;
     if (on) { this._lockY = window.scrollY || 1; Object.assign(b, { position:'fixed', top: -window.scrollY + 'px', left:'0', right:'0', overflow:'hidden' }); }
     else { const y = this._lockY; this._lockY = 0; Object.assign(b, { position:'', top:'', left:'', right:'', overflow:'' }); window.scrollTo(0, y > 1 ? y : 0); } }
+  toggleMenu(m) { if (this.state.menu === m && this._menuBy === 'click') this.setState({ menu:null }); else { this._menuBy = 'click'; this.setState({ menu:m }); } }
   frame(fn) { this._frameFn = fn; if (!this._raf) this._raf = requestAnimationFrame(() => { this._raf = 0; const f = this._frameFn; this._frameFn = null; if (f) f(); }); } // at most one state update per animation frame
   componentWillUnmount() { window.removeEventListener('popstate', this._onPop); document.removeEventListener('pointerdown', this._onDocDown); cancelAnimationFrame(this._raf); window.removeEventListener('keydown', this._onKey); if (this._viewer) this._viewer.destroy(); window.removeEventListener('hashchange', this._onHash); window.removeEventListener('storage', this._onStorage); clearTimeout(this._newsT); clearInterval(this._prog); }
   saveCart(cart) { this.setState({ cart }); try { localStorage.setItem('mv_cart', JSON.stringify(cart.map(c => ({ ...c, img: c.img && c.img.length > 200000 ? '' : c.img })))); } catch (e) {} }
@@ -1895,8 +1896,9 @@ class Component extends DCLogic {
       on, footGuides: on.foot_faq || on.foot_blog || on.foot_sizes || on.foot_howto || on.foot_finishes, footFollow: on.foot_social || on.foot_newsletter, goStory: on.nav_wall ? () => { location.hash = '#/wall'; } : undefined, storyCursor: on.nav_wall ? 'pointer' : 'default',
       scrollToCz: () => { const el = document.getElementById('customizer'); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); },
       products: VP.map(x => ({ ...x, from: money(x.from) })), artists: ARTISTS, menuPrints: S.menu === 'prints', menuArt: S.menu === 'art',
-      openMenuPrints: () => { this._hoverT = Date.now(); this.setState({ menu:'prints' }); }, openMenuArt: () => { this._hoverT = Date.now(); this.setState({ menu:'art' }); },
-      toggleMenuPrints: () => this.setState({ menu: S.menu === 'prints' && Date.now() - (this._hoverT || 0) > 500 ? null : 'prints' }), toggleMenuArt: () => this.setState({ menu: S.menu === 'art' && Date.now() - (this._hoverT || 0) > 500 ? null : 'art' }), closeMenu: go({ menu:null }),
+      // hover opens the menu; a click pins it (so clicking a hover-opened menu never closes it), a second click closes. On touch, tap = hover + click → opens.
+      openMenuPrints: () => { if (this.state.menu !== 'prints') { this._menuBy = 'hover'; this.setState({ menu:'prints' }); } }, openMenuArt: () => { if (this.state.menu !== 'art') { this._menuBy = 'hover'; this.setState({ menu:'art' }); } },
+      toggleMenuPrints: () => this.toggleMenu('prints'), toggleMenuArt: () => this.toggleMenu('art'), closeMenu: go({ menu:null }),
       q: S.q, setQ: e => this.setState({ q: e.target.value }), submitSearch: e => { e.preventDefault(); location.hash = '#/search/' + encodeURIComponent(S.q); },
       cartCount: cc.count, cartAria: `Cart, ${cc.count} item${cc.count === 1 ? '' : 's'}`, openCart: go({ cartOpen:true }), closeCart: go({ cartOpen:false }), cartOpen: S.cartOpen, cartEmpty: S.cart.length === 0, cartItems,
       cartSubtotal: money(cc.sub), cartDisc: money(cc.disc), cartTotal: money(cc.total), cartDiscLabel: cc.byCode ? `Code ${S.code} · ${pct(cc.rate)} off prints` : cc.rate ? `Bundle discount · ${pct(cc.rate)} off prints` : 'Bundle discount',
