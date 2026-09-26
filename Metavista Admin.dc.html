@@ -33,25 +33,80 @@ input,textarea,button,select{font-family:inherit}
 button{cursor:pointer}
 @keyframes mv-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 :focus-visible{outline:2px solid #E8362D;outline-offset:2px}
+.adm-mtop,.adm-tabbar,.adm-sheet,.adm-nextbar,.s-cap{display:none}
+/* iOS-style switch for every on/off setting */
+.adm-switch{-webkit-appearance:none;appearance:none;width:46px;height:28px;border-radius:999px;background:#D9D4CE;position:relative;cursor:pointer;flex-shrink:0;margin:0;transition:background .18s}
+.adm-switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .18s}
+.adm-switch:checked{background:#E8362D}.adm-switch:checked::after{transform:translateX(18px)}
 @media (max-width:860px){
+  /* app shell: slim top bar + bottom tab bar instead of the sidebar */
   .adm-root{display:block!important}
-  .adm-side{position:static!important;height:auto!important;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;align-items:center;padding:12px!important}
-  .adm-side > a{flex-shrink:0;white-space:nowrap}
-  .adm-side > div:last-child{margin:0 0 0 auto!important;border:0!important;padding:0 0 0 8px!important;flex-shrink:0}
-  .adm-side > div:last-child > span{display:none!important}
+  .adm-side{display:none!important}
+  .adm-mtop{display:flex!important}
+  .adm-tabbar{display:grid!important}
+  .adm-sheet{display:block!important}
+  .adm-nextbar{display:flex!important}
+  .adm-main{padding:14px 14px calc(104px + env(safe-area-inset-bottom))!important}
+  .adm-has-next .adm-main{padding-bottom:calc(176px + env(safe-area-inset-bottom))!important}
+  .adm-toast{bottom:auto!important;top:calc(62px + env(safe-area-inset-top));max-width:calc(100vw - 28px);width:max-content;text-align:center;border-radius:14px!important}
+  .adm-savebar{position:sticky;bottom:calc(72px + env(safe-area-inset-bottom));z-index:30;padding:10px 0;background:linear-gradient(transparent,#FBFAF8 30%)}
+  .adm-savebar button{width:100%;min-height:50px}
   input,textarea,select{font-size:16px!important}
+  .adm-main button{min-height:40px}
+  /* page header */
+  .adm-head{margin-bottom:14px!important;gap:10px!important}
+  .adm-kicker,.adm-storelink{display:none!important}
+  .adm-head h1{font-size:25px!important}
+  .adm-head > div:last-child{width:100%}
+  .adm-head input{width:100%!important;min-height:46px;padding:12px 16px!important}
+  /* filter chips: one swipeable row */
+  .adm-chips{flex-wrap:nowrap!important;overflow-x:auto;margin:0 -14px 14px!important;padding:2px 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .adm-chips::-webkit-scrollbar{display:none}
+  .adm-chips > *{flex-shrink:0}
+  /* tables become cards */
+  .adm-thead{display:none!important}
+  .adm-orow{min-width:0!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"id st" "cu to" "it da";row-gap:5px!important;padding:14px 16px!important}
+  .o-id{grid-area:id;font-size:15px}.o-cu{grid-area:cu}.o-it{grid-area:it}.o-st{grid-area:st;justify-self:end}.o-to{grid-area:to;justify-self:end;font-size:15px}.o-da{grid-area:da;justify-self:end}
+  .adm-crow{min-width:0!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"nm sp" "co tg";row-gap:4px!important}
+  .c-nm{grid-area:nm}.c-co{grid-area:co;padding-left:42px;font-size:12px}.c-sp{grid-area:sp;justify-self:end}.c-tg{grid-area:tg;justify-self:end}.c-or,.c-la{display:none}
+  .adm-rrow{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"id to" "cu st";row-gap:4px!important;padding:12px 4px!important;border-bottom:1px solid #EFEBE6;border-radius:0!important}
+  .r-id{grid-area:id}.r-cu{grid-area:cu}.r-st{grid-area:st;justify-self:end}.r-to{grid-area:to;justify-self:end}
+  .adm-srow{min-width:0!important;grid-template-columns:1fr 1fr!important;grid-template-areas:"cd cd" "pr cp";padding:14px 16px!important}
+  .s-cd{grid-area:cd;display:flex!important;gap:10px;align-items:baseline}.s-dm,.s-cm{display:inline!important}.s-pr{grid-area:pr}.s-cp{grid-area:cp}.s-st{display:none}
+  .s-cap{display:block;font-size:11px;font-weight:700;color:#8E8E8E;margin-bottom:4px}
+  .adm-srow input{min-height:44px}
+  /* dashboard: compact 2-up KPIs */
+  .adm-kpis{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  .adm-kpis > div{padding:14px!important}
+  .adm-kpis strong{font-size:22px!important}
+  .adm-vs{display:none}
+  .adm-dash .adm-kpis{order:2;margin-bottom:14px!important}.adm-dash .d-act{order:1;margin-bottom:14px}.adm-dash .d-charts{order:3}
+  /* order page: most-used blocks first */
+  .adm-order{display:flex!important;flex-direction:column;gap:14px!important;align-items:stretch!important}
+  .adm-order [class^="o-"]{min-width:0;max-width:100%}
+  .adm-order .o-stat input{min-width:0}
+  .adm-order > div{display:contents!important}
+  .o-sum{order:1}.o-stat{order:2}.o-proof{order:3}.o-cust{order:4}.o-time{order:5}.o-btns{order:6}
   .adm-row{grid-template-columns:52px minmax(0,1fr)!important}
   .adm-row > :last-child{grid-column:1 / -1;flex-wrap:wrap}
-  .adm-main{padding:20px 16px 48px!important}
-  .adm-main input[placeholder^="Поиск"]{width:100%!important}
-  .adm-main > div:first-child > div:last-child{width:100%}
-  .adm-scroll{overflow-x:auto}
+  .adm-faq-row{flex-wrap:wrap}
+  .adm-faq-row input{flex:1 1 100%!important;min-width:0}
   .adm-split{grid-template-columns:minmax(0,1fr)!important}
+  .adm-sec label{padding:12px 0!important}
+  .adm-codeform{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  .adm-codeform input{min-width:0;min-height:46px}
+  .adm-codeform button{grid-column:1 / -1;min-height:46px}
 }
 </style>
 </helmet>
 
-<div class="adm-root" style="min-height:100vh;display:grid;grid-template-columns:240px minmax(0,1fr)" data-screen-label="Admin">
+<div class="adm-root {{ rootClass }}" style="min-height:100vh;display:grid;grid-template-columns:240px minmax(0,1fr)" data-screen-label="Admin">
+
+<!-- MOBILE TOP BAR -->
+<header class="adm-mtop" style="position:sticky;top:0;z-index:40;background:#141414;color:#fff;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px">
+  <a href="#/" style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:800;font-size:17px"><img src="assets/logo-mark-2x.png" alt="" width="27" height="24" style="height:24px;width:auto">Metavista <span style="font-size:9.5px;font-weight:700;letter-spacing:.12em;color:#B9B4AE">АДМИНКА</span></a>
+  <a href="Metavista Store.dc.html" style="margin-left:auto;color:#fff;border:1px solid #3A3A3A;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:700;min-height:36px;display:inline-flex;align-items:center">Магазин ↗</a>
+</header>
 
 <!-- SIDEBAR -->
 <aside class="adm-side" style="background:#141414;color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh">
@@ -73,22 +128,23 @@ button{cursor:pointer}
 
 <!-- MAIN -->
 <main class="adm-main" style="padding:28px 32px 60px;min-width:0">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px">
-    <div><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;color:#E8362D">{{ pageKicker }}</p><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em">{{ pageTitle }}</h1></div>
+  <div class="adm-head" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px">
+    <div><p class="adm-kicker" style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;color:#E8362D">{{ pageKicker }}</p><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em">{{ pageTitle }}</h1></div>
     <div style="display:flex;gap:8px;align-items:center">
       <sc-if value="{{ showSearch }}" hint-placeholder-val="{{ false }}"><input value="{{ q }}" onChange="{{ setQ }}" type="search" aria-label="Поиск" placeholder="{{ searchPh }}" style="border:1px solid #E8E4DF;border-radius:999px;padding:10px 16px;font-size:13px;background:#fff;width:240px"></sc-if>
-      <a href="Metavista Store.dc.html" style="border:1.5px solid #141414;color:#141414;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700">Открыть магазин ↗</a>
+      <a href="Metavista Store.dc.html" class="adm-storelink" style="border:1.5px solid #141414;color:#141414;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:700">Открыть магазин ↗</a>
     </div>
   </div>
 
   <!-- DASHBOARD -->
   <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px">
+    <div class="adm-dash" style="display:flex;flex-direction:column">
+    <div class="adm-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px">
       <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px"><span style="font-size:12px;color:#8E8E8E;font-weight:600">{{ k.label }}</span><strong style="display:block;font-size:28px;font-weight:800;margin:6px 0 4px;letter-spacing:-.02em">{{ k.value }}</strong><span style="font-size:12px;font-weight:700;color:{{ k.deltaColor }}">{{ k.delta }}</span><span style="font-size:12px;color:#8E8E8E"> к прошлым 30 дням</span></div>
+        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px"><span style="font-size:12px;color:#8E8E8E;font-weight:600">{{ k.label }}</span><strong style="display:block;font-size:28px;font-weight:800;margin:6px 0 4px;letter-spacing:-.02em">{{ k.value }}</strong><span style="font-size:12px;font-weight:700;color:{{ k.deltaColor }}">{{ k.delta }}</span><span class="adm-vs" style="font-size:12px;color:#8E8E8E"> к прошлым 30 дням</span></div>
       </sc-for>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;margin-bottom:22px">
+    <div class="d-charts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px;margin-bottom:22px">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <div style="display:flex;justify-content:space-between;margin-bottom:14px"><strong style="font-size:14px">Выручка · последние 14 дней</strong><span style="font-size:12px;color:#8E8E8E">USD</span></div>
         <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
@@ -105,7 +161,7 @@ button{cursor:pointer}
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px">
+    <div class="d-act" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px">
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong style="font-size:14px">Требует внимания</strong></div>
         <div style="display:grid;gap:8px">
@@ -115,27 +171,28 @@ button{cursor:pointer}
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <strong style="font-size:14px;display:block;margin-bottom:12px">Последние заказы</strong>
         <div style="display:grid;gap:6px">
-          <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5"><a href="{{ o.href }}" style="display:grid;grid-template-columns:90px 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;color:#141414;font-size:12.5px" style-hover="background:#F7F3EE"><strong>{{ o.id }}</strong><span style="color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.customer }}</span><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span><strong>${{ o.total }}</strong></a></sc-for>
+          <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5"><a href="{{ o.href }}" class="adm-rrow" style="display:grid;grid-template-columns:90px 1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-radius:10px;color:#141414;font-size:12.5px" style-hover="background:#F7F3EE"><strong class="r-id">{{ o.id }}</strong><span class="r-cu" style="color:#4A4A4A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">{{ o.customer }}</span><span class="r-st" style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span><strong class="r-to">${{ o.total }}</strong></a></sc-for>
         </div>
       </div>
+    </div>
     </div>
   </sc-if>
 
   <!-- ORDERS LIST -->
   <sc-if value="{{ isOrders }}" hint-placeholder-val="{{ false }}">
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <div class="adm-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
       <sc-for list="{{ statusTabs }}" as="t" hint-placeholder-count="7"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }} · {{ t.n }}</button></sc-for>
     </div>
-    <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
-      <div style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>ЗАКАЗ</span><span>КЛИЕНТ</span><span>ТОВАРЫ</span><span>СТАТУС</span><span>СУММА</span><span>ДАТА</span></div>
+    <div class="adm-table" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
+      <div class="adm-thead" style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>ЗАКАЗ</span><span>КЛИЕНТ</span><span>ТОВАРЫ</span><span>СТАТУС</span><span>СУММА</span><span>ДАТА</span></div>
       <sc-for list="{{ orders }}" as="o" hint-placeholder-count="8">
-        <a href="{{ o.href }}" style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
-          <strong>{{ o.id }}</strong>
-          <span style="min-width:0"><span style="display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.customer }}</span><span style="font-size:11.5px;color:#8E8E8E">{{ o.country }}</span></span>
-          <span style="color:#4A4A4A;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.itemsLabel }}</span>
-          <span><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span></span>
-          <strong>${{ o.total }}</strong>
-          <span style="font-size:12px;color:#8E8E8E">{{ o.date }}</span>
+        <a href="{{ o.href }}" class="adm-orow" style="min-width:760px;display:grid;grid-template-columns:100px 1.4fr 1.6fr 120px 90px 110px;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
+          <strong class="o-id">{{ o.id }}</strong>
+          <span class="o-cu" style="min-width:0"><span style="display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.customer }}</span><span style="font-size:11.5px;color:#8E8E8E">{{ o.country }}</span></span>
+          <span class="o-it" style="color:#4A4A4A;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">{{ o.itemsLabel }}</span>
+          <span class="o-st"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ o.sBg }};color:{{ o.sColor }}">{{ o.status }}</span></span>
+          <strong class="o-to">${{ o.total }}</strong>
+          <span class="o-da" style="font-size:12px;color:#8E8E8E">{{ o.date }}</span>
         </a>
       </sc-for>
       <sc-if value="{{ ordersEmpty }}" hint-placeholder-val="{{ false }}"><p style="padding:40px;text-align:center;color:#8E8E8E;margin:0">Заказов не найдено.</p></sc-if>
@@ -146,9 +203,9 @@ button{cursor:pointer}
   <sc-if value="{{ orderMissing }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:32px;text-align:center"><strong style="display:block;font-size:16px;margin-bottom:6px">Заказ не найден</strong><span style="color:#8E8E8E;font-size:13px">Проверьте номер или вернитесь к <a href="#/orders">списку заказов</a>.</span></div></sc-if>
   <sc-if value="{{ isOrder }}" hint-placeholder-val="{{ false }}">
     <a href="#/orders" style="font-size:12.5px;font-weight:700;color:#8E8E8E">← Все заказы</a>
-    <div class="adm-split" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;margin-top:14px;align-items:start">
+    <div class="adm-split adm-order" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;margin-top:14px;align-items:start">
       <div style="display:grid;gap:14px">
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div class="o-sum" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px"><h2 style="margin:0;font-size:20px;font-weight:800">{{ order.id }} <span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:{{ order.sBg }};color:{{ order.sColor }};vertical-align:middle;margin-left:6px">{{ order.status }}</span></h2><span style="font-size:12.5px;color:#8E8E8E">{{ order.date }} · {{ order.payment }}</span></div>
           <sc-for list="{{ order.items }}" as="it" hint-placeholder-count="2">
             <div style="display:grid;grid-template-columns:72px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #EFEBE6">
@@ -159,7 +216,7 @@ button{cursor:pointer}
           </sc-for>
           <div style="border-top:1px solid #EFEBE6;padding-top:12px;display:grid;gap:5px;font-size:13px"><div style="display:flex;justify-content:space-between"><span>Подытог</span><span>${{ order.sub }}</span></div><div style="display:flex;justify-content:space-between;color:#E8362D;font-weight:700"><span>Скидка за комплект · {{ order.discPct }}%</span><span>−${{ order.disc }}</span></div><div style="display:flex;justify-content:space-between"><span>Доставка · {{ order.shipMethod }}</span><span>${{ order.ship }}</span></div><div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin-top:4px"><span>Итого</span><span>${{ order.total }}</span></div></div>
         </div>
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div class="o-proof" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <strong style="font-size:14px;display:block;margin-bottom:12px">Согласование превью S.HD™</strong>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div><div style="aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,#DDD7D0 0 12px,#E9E3DC 12px 24px)"></div><span style="font-size:11.5px;color:#8E8E8E;display:block;margin-top:6px">Загрузка клиента</span></div>
@@ -167,7 +224,7 @@ button{cursor:pointer}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;flex-wrap:wrap"><span style="font-size:12.5px;color:#4A4A4A">Статус макета: <strong style="color:{{ order.proofColor }}">{{ order.proofLabel }}</strong></span><div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ sendProof }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700">Отправить макет клиенту</button><button onClick="{{ approveProof }}" style="border:0;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Отметить согласованным</button></div></div>
         </div>
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div class="o-time" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <strong style="font-size:14px;display:block;margin-bottom:12px">История</strong>
           <div style="display:grid;gap:10px">
             <sc-for list="{{ order.timeline }}" as="t" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:flex-start;font-size:12.5px"><span style="width:10px;height:10px;border-radius:50%;background:#E8362D;margin-top:4px;flex-shrink:0"></span><span><strong>{{ t.t }}</strong><span style="color:#8E8E8E"> · {{ t.d }}</span></span></div></sc-for>
@@ -175,7 +232,7 @@ button{cursor:pointer}
         </div>
       </div>
       <div style="display:grid;gap:14px">
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
+        <div class="o-stat" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
           <strong style="font-size:14px;display:block;margin-bottom:12px">Изменить статус</strong>
           <select value="{{ order.statusKey }}" onChange="{{ setOrderStatus }}" style="width:100%;border:1px solid #E8E4DF;border-radius:12px;padding:11px 12px;font-size:13px;background:#fff">
             <sc-for list="{{ statusList }}" as="s" hint-placeholder-count="6"><option value="{{ s.key }}">{{ s.label }}</option></sc-for>
@@ -185,14 +242,20 @@ button{cursor:pointer}
           <p style="margin:12px 0 6px;font-size:12px;font-weight:700">Внутренняя заметка</p>
           <textarea value="{{ order.adminNote }}" onChange="{{ setAdminNote }}" rows="3" placeholder="Видна только сотрудникам" style="width:100%;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea>
         </div>
-        <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px;font-size:13px;line-height:1.6">
+        <div class="o-cust" style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px;font-size:13px;line-height:1.6">
           <strong style="font-size:14px;display:block;margin-bottom:8px">Клиент</strong>
           <a href="{{ order.customerHref }}" style="font-weight:700;color:#141414;border-bottom:2px solid #F26A1B">{{ order.customer }}</a><span style="display:block;color:#4A4A4A">{{ order.email }}</span>
           <strong style="font-size:12px;display:block;margin:14px 0 4px;letter-spacing:.08em;color:#8E8E8E">АДРЕС ДОСТАВКИ</strong><span style="color:#4A4A4A;white-space:pre-line">{{ order.address }}</span>
         </div>
-        <div style="display:grid;gap:8px"><button onClick="{{ refundOrder }}" style="border:1.5px solid #E8362D;color:#E8362D;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Возврат / перепечать</button><button onClick="{{ resendEmail }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Повторно отправить письмо-подтверждение</button></div>
+        <div class="o-btns" style="display:grid;gap:8px"><button onClick="{{ refundOrder }}" style="border:1.5px solid #E8362D;color:#E8362D;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Возврат / перепечать</button><button onClick="{{ resendEmail }}" style="border:1.5px solid #141414;background:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700">Повторно отправить письмо-подтверждение</button></div>
       </div>
     </div>
+    <sc-if value="{{ nextStep }}" hint-placeholder-val="{{ false }}">
+      <div class="adm-nextbar" style="position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:45;padding:10px 14px;background:rgba(251,250,248,.97);backdrop-filter:blur(8px);border-top:1px solid #E8E4DF;align-items:center;gap:10px">
+        <span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:5px 9px;border-radius:999px;background:{{ order.sBg }};color:{{ order.sColor }};white-space:nowrap">{{ order.status }}</span>
+        <button onClick="{{ nextStep.run }}" style="flex:1;border:0;border-radius:14px;padding:14px 12px;font-size:14px;font-weight:800;color:#fff;background:#141414;min-height:48px">{{ nextStep.label }}</button>
+      </div>
+    </sc-if>
   </sc-if>
 
   <!-- S.HD QUEUE -->
@@ -224,13 +287,13 @@ button{cursor:pointer}
       </div>
       <div style="display:grid;gap:14px">
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><h2 style="margin:0;font-size:20px;font-weight:800">{{ curProduct.tag }}</h2><label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700"><input type="checkbox" checked="{{ curProduct.visible }}" onChange="{{ toggleVisible }}" style="accent-color:#E8362D;width:16px;height:16px">Показывать в магазине</label></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px"><h2 style="margin:0;font-size:20px;font-weight:800">{{ curProduct.tag }}</h2><label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700"><input type="checkbox" class="adm-switch" checked="{{ curProduct.visible }}" onChange="{{ toggleVisible }}">Показывать в магазине</label></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label style="font-size:12px;font-weight:700">Название<input value="{{ curProduct.name }}" onChange="{{ setProdName }}" style="display:block;width:100%;margin-top:6px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:500"></label><label style="font-size:12px;font-weight:700">Бейдж<select value="{{ curProduct.badge }}" onChange="{{ setBadge }}" style="display:block;width:100%;margin-top:6px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;background:#fff"><option value="">Нет</option><option value="BESTSELLER">BESTSELLER</option><option value="NEW">NEW</option></select></label></div>
         </div>
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
-          <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>КОД</span><span>РАЗМЕР</span><span>В СМ</span><span>ЦЕНА $</span><span>СТАРАЯ ЦЕНА $</span><span>НАЛИЧИЕ</span></div>
+          <div class="adm-thead" style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>КОД</span><span>РАЗМЕР</span><span>В СМ</span><span>ЦЕНА $</span><span>СТАРАЯ ЦЕНА $</span><span>НАЛИЧИЕ</span></div>
           <sc-for list="{{ curSizes }}" as="s" hint-placeholder-count="3">
-            <div style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid #EFEBE6;font-size:13px"><strong>{{ s.code }}</strong><span style="white-space:nowrap">{{ s.dim }}</span><span style="color:#8E8E8E;white-space:nowrap">{{ s.cm }}</span><input value="{{ s.price }}" onChange="{{ s.setPrice }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><input value="{{ s.compare }}" onChange="{{ s.setCompare }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Старая цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"><span style="font-weight:700;color:#1E8E3E">Под заказ</span></div>
+            <div class="adm-srow" style="min-width:640px;display:grid;grid-template-columns:90px 1.3fr 1fr 110px 110px 80px;gap:12px;align-items:center;padding:10px 18px;border-bottom:1px solid #EFEBE6;font-size:13px"><span class="s-cd" style="display:contents"><strong>{{ s.code }}</strong><span class="s-dm" style="white-space:nowrap">{{ s.dim }}</span><span class="s-cm" style="color:#8E8E8E;white-space:nowrap">{{ s.cm }}</span></span><label class="s-pr" style="display:block;min-width:0"><span class="s-cap">Цена, $</span><input value="{{ s.price }}" onChange="{{ s.setPrice }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"></label><label class="s-cp" style="display:block;min-width:0"><span class="s-cap">Старая цена, $</span><input value="{{ s.compare }}" onChange="{{ s.setCompare }}" type="number" min="0" step="0.01" inputmode="decimal" aria-label="Старая цена" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:13px;width:100%"></label><span class="s-st" style="font-weight:700;color:#1E8E3E">Под заказ</span></div>
           </sc-for>
         </div>
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
@@ -239,14 +302,14 @@ button{cursor:pointer}
             <sc-for list="{{ addons }}" as="a" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ a.t }}<div style="display:flex;align-items:center;gap:6px;margin-top:6px"><span style="color:#8E8E8E">+$</span><input value="{{ a.price }}" onChange="{{ a.set }}" type="number" min="0" step="0.01" inputmode="decimal" style="border:1px solid #E8E4DF;border-radius:10px;padding:7px 10px;font-size:13px;width:80px"></div></label></sc-for>
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end"><button onClick="{{ savePricing }}" style="border:0;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;background:#141414">Сохранить изменения</button></div>
+        <div class="adm-savebar" style="display:flex;justify-content:flex-end"><button onClick="{{ savePricing }}" style="border:0;border-radius:999px;padding:12px 24px;font-size:13px;font-weight:700;color:#fff;background:#141414">Сохранить изменения</button></div>
       </div>
     </div>
   </sc-if>
 
   <!-- WALL OF FAME MODERATION -->
   <sc-if value="{{ isWall }}" hint-placeholder-val="{{ false }}">
-    <div style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ wallTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }} · {{ t.n }}</button></sc-for></div>
+    <div class="adm-chips" style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ wallTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }} · {{ t.n }}</button></sc-for></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
       <sc-for list="{{ wallItems }}" as="w" hint-placeholder-count="6">
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow:hidden">
@@ -284,12 +347,12 @@ button{cursor:pointer}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
           <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="3"><label style="font-size:12px;font-weight:700;border:1px solid #E8E4DF;border-radius:12px;padding:12px">{{ t.label }}<div style="display:flex;align-items:center;gap:4px;margin-top:6px"><input value="{{ t.pct }}" onChange="{{ t.set }}" type="number" min="0" max="90" inputmode="numeric" style="border:1px solid #E8E4DF;border-radius:10px;padding:8px 10px;font-size:14px;font-weight:800;width:64px"><span style="color:#8E8E8E">%</span></div></label></sc-for>
         </div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin-top:14px"><input type="checkbox" checked="{{ promoBarOn }}" onChange="{{ togglePromoBar }}" style="accent-color:#E8362D;width:16px;height:16px">Показывать промо-полосу в магазине</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin-top:14px"><input type="checkbox" class="adm-switch" checked="{{ promoBarOn }}" onChange="{{ togglePromoBar }}">Показывать промо-полосу в магазине</label>
         <div style="margin-top:14px;background:#141414;color:#fff;border-radius:10px;padding:9px 14px;font-size:11.5px;font-weight:600;letter-spacing:.04em">{{ promoPreview }}</div>
       </div>
       <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:20px">
         <strong style="font-size:14px;display:block;margin-bottom:12px">Промокоды</strong>
-        <form onSubmit="{{ addCode }}" style="display:grid;grid-template-columns:1.3fr .8fr auto;gap:8px;margin-bottom:14px"><input value="{{ newCode }}" onChange="{{ setNewCode }}" placeholder="КОД" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;text-transform:uppercase"><input value="{{ newPct }}" onChange="{{ setNewPct }}" placeholder="% скидки" required type="number" min="1" max="100" inputmode="numeric" style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button type="submit" style="border:0;border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Добавить</button></form>
+        <form onSubmit="{{ addCode }}" class="adm-codeform" style="display:grid;grid-template-columns:1.3fr .8fr auto;gap:8px;margin-bottom:14px"><input value="{{ newCode }}" onChange="{{ setNewCode }}" placeholder="КОД" required style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;text-transform:uppercase"><input value="{{ newPct }}" onChange="{{ setNewPct }}" placeholder="% скидки" required type="number" min="1" max="100" inputmode="numeric" style="border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px"><button type="submit" style="border:0;border-radius:12px;padding:10px 16px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Добавить</button></form>
         <div style="display:grid;gap:8px">
           <sc-for list="{{ codes }}" as="c" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid #EFEBE6;border-radius:12px;font-size:13px"><span><code style="font-weight:800;letter-spacing:.08em">{{ c.code }}</code><span style="display:block;font-size:11.5px;color:#8E8E8E">{{ c.uses }} исп. · {{ c.source }}</span></span><strong>{{ c.pct }}%</strong><button onClick="{{ c.toggle }}" style="border:1.5px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};border-radius:999px;padding:6px 12px;font-size:11.5px;font-weight:700">{{ c.state }}</button><button onClick="{{ c.remove }}" aria-label="Удалить промокод" style="border:0;background:none;color:#8E8E8E;font-size:18px;min-width:36px;min-height:36px">×</button></div></sc-for>
         </div>
@@ -300,12 +363,12 @@ button{cursor:pointer}
   <!-- CUSTOMERS -->
   <sc-if value="{{ isCustomers }}" hint-placeholder-val="{{ false }}">
     <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;overflow-x:auto">
-      <div style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>КЛИЕНТ</span><span>ГДЕ</span><span>ЗАКАЗЫ</span><span>ПОТРАТИЛ</span><span>ПОСЛ. ЗАКАЗ</span><span>МЕТКИ</span></div>
+      <div class="adm-thead" style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;padding:12px 18px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8E8E8E;border-bottom:1px solid #EFEBE6"><span>КЛИЕНТ</span><span>ГДЕ</span><span>ЗАКАЗЫ</span><span>ПОТРАТИЛ</span><span>ПОСЛ. ЗАКАЗ</span><span>МЕТКИ</span></div>
       <sc-for list="{{ customers }}" as="c" hint-placeholder-count="8">
-        <a href="{{ c.href }}" style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
-          <span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">{{ c.initials }}</span><span style="min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</strong><span style="font-size:11.5px;color:#8E8E8E">{{ c.email }}</span></span></span>
-          <span style="color:#4A4A4A">{{ c.country }}</span><span>{{ c.orders }}</span><strong>${{ c.spent }}</strong><span style="font-size:12px;color:#8E8E8E">{{ c.last }}</span>
-          <span><sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:#FFF4E5;color:#B84A0E">{{ c.tag }}</span></sc-if></span>
+        <a href="{{ c.href }}" class="adm-crow" style="min-width:780px;display:grid;grid-template-columns:1.6fr 1fr 90px 110px 120px 100px;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid #EFEBE6;color:#141414;font-size:13px" style-hover="background:#FBFAF8">
+          <span class="c-nm" style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#F7B21B,#E8362D);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">{{ c.initials }}</span><span style="min-width:0"><strong style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.name }}</strong><span style="font-size:11.5px;color:#8E8E8E">{{ c.email }}</span></span></span>
+          <span class="c-co" style="color:#4A4A4A">{{ c.country }}</span><span class="c-or">{{ c.orders }}</span><strong class="c-sp">${{ c.spent }}</strong><span class="c-la" style="font-size:12px;color:#8E8E8E">{{ c.last }}</span>
+          <span class="c-tg"><sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:#FFF4E5;color:#B84A0E">{{ c.tag }}</span></sc-if></span>
         </a>
       </sc-for>
       <sc-if value="{{ customersEmpty }}" hint-placeholder-val="{{ false }}"><p style="padding:40px;text-align:center;color:#8E8E8E;margin:0">Клиентов не найдено.</p></sc-if>
@@ -332,12 +395,12 @@ button{cursor:pointer}
 
   <!-- CONTENT -->
   <sc-if value="{{ isContent }}" hint-placeholder-val="{{ false }}">
-    <div style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ contentTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }}</button></sc-for></div>
+    <div class="adm-chips" style="display:flex;gap:8px;margin-bottom:16px"><sc-for list="{{ contentTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:2px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700">{{ t.label }}</button></sc-for></div>
     <sc-if value="{{ contentFaq }}" hint-placeholder-val="{{ true }}">
       <div style="display:grid;gap:10px">
         <sc-for list="{{ faqRows }}" as="f" hint-placeholder-count="8">
           <div style="background:#fff;border:1px solid #E8E4DF;border-radius:16px;padding:14px 18px">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><input value="{{ f.q }}" onChange="{{ f.setQ }}" style="flex:1;border:0;font-size:14px;font-weight:700;background:none;padding:4px 0"><button onClick="{{ f.toggle }}" style="border:0;background:none;color:#8E8E8E;font-size:12.5px;font-weight:700">{{ f.toggleLabel }}</button><button onClick="{{ f.remove }}" aria-label="Удалить вопрос" style="border:0;background:none;color:#8E8E8E;font-size:18px;min-width:36px;min-height:36px">×</button></div>
+            <div class="adm-faq-row" style="display:flex;justify-content:space-between;gap:12px;align-items:center"><input value="{{ f.q }}" onChange="{{ f.setQ }}" aria-label="Вопрос" style="flex:1;min-width:0;border:0;font-size:14px;font-weight:700;background:none;padding:4px 0"><button onClick="{{ f.toggle }}" style="border:0;background:none;color:#8E8E8E;font-size:12.5px;font-weight:700">{{ f.toggleLabel }}</button><button onClick="{{ f.remove }}" aria-label="Удалить вопрос" style="border:0;background:none;color:#8E8E8E;font-size:18px;min-width:36px;min-height:36px">×</button></div>
             <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><textarea value="{{ f.a }}" onChange="{{ f.setA }}" rows="3" style="width:100%;margin-top:8px;border:1px solid #E8E4DF;border-radius:12px;padding:10px 12px;font-size:13px;resize:vertical"></textarea></sc-if>
           </div>
         </sc-for>
@@ -372,14 +435,14 @@ button{cursor:pointer}
       <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="shd-endpoint" value="{{ shdEndpoint }}" onChange="{{ setShdEndpoint }}" placeholder="https://your-server.example/enhance" style="flex:1 1 260px;min-width:0;border:1px solid #E8E4DF;border-radius:12px;padding:11px 14px;font-size:13px"><button onClick="{{ saveShdEndpoint }}" style="border:0;border-radius:999px;padding:11px 18px;font-size:12.5px;font-weight:700;color:#fff;background:#141414">Сохранить</button></div>
       <p style="margin:8px 0 0;font-size:12px;color:#6B6B6B">Сейчас: <strong style="color:#141414">{{ shdModeLabel }}</strong></p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px;align-items:start">
+    <div class="adm-sec" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px;align-items:start">
       <sc-for list="{{ featureGroups }}" as="g" hint-placeholder-count="6">
         <div style="background:#fff;border:1px solid #E8E4DF;border-radius:18px;padding:16px 18px">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><strong style="font-size:14px">{{ g.name }}</strong><span style="font-size:11.5px;color:#8E8E8E;font-weight:600">{{ g.count }}</span></div>
           <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="5">
             <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #F1EEEA;font-size:13px;cursor:pointer">
               <span style="color:{{ f.color }};font-weight:600">{{ f.label }}</span>
-              <input type="checkbox" checked="{{ f.on }}" onChange="{{ f.toggle }}" style="accent-color:#E8362D;width:17px;height:17px;flex-shrink:0">
+              <input type="checkbox" class="adm-switch" checked="{{ f.on }}" onChange="{{ f.toggle }}">
             </label>
           </sc-for>
         </div>
@@ -389,8 +452,36 @@ button{cursor:pointer}
 </main>
 </div>
 
+<!-- MOBILE BOTTOM TABS -->
+<nav class="adm-tabbar" aria-label="Разделы" style="{{ tabbarStyle }}">
+  <sc-for list="{{ tabItems }}" as="t" hint-placeholder-count="5">
+    <a href="{{ t.href }}" onClick="{{ t.click }}" aria-current="{{ t.current }}" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;padding:6px 2px;color:{{ t.color }};font-size:10.5px;font-weight:700;text-align:center">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path sc-camel-d="{{ t.icon }}"></path></svg>
+      <span>{{ t.label }}</span>
+      <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:5px;left:calc(50% + 6px);background:#E8362D;color:#fff;font-size:10px;font-weight:800;border-radius:999px;min-width:17px;height:17px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;border:2px solid #fff">{{ t.badge }}</span></sc-if>
+    </a>
+  </sc-for>
+</nav>
+<sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="adm-sheet">
+    <div onClick="{{ closeMore }}" style="position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:60;animation:mv-in .15s ease"></div>
+    <div role="dialog" aria-modal="true" aria-label="Все разделы" style="position:fixed;left:0;right:0;bottom:0;z-index:61;background:#fff;border-radius:22px 22px 0 0;padding:10px 14px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -20px 50px rgba(20,20,20,.25);animation:mv-in .2s ease;max-height:80vh;overflow:auto">
+      <div style="width:40px;height:5px;border-radius:3px;background:#E0DBD5;margin:0 auto 12px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <sc-for list="{{ moreItems }}" as="m" hint-placeholder-count="6">
+          <a href="{{ m.href }}" onClick="{{ closeMore }}" style="display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:56px;padding:12px 14px;border-radius:14px;background:{{ m.bg }};border:1.5px solid {{ m.border }};color:#141414;font-size:14px;font-weight:700"><span>{{ m.label }}</span><sc-if value="{{ m.badge }}" hint-placeholder-val="{{ false }}"><span style="background:#E8362D;color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px">{{ m.badge }}</span></sc-if></a>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <a href="Metavista Store.dc.html" style="flex:1;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#141414;color:#fff;font-size:14px;font-weight:700">Открыть магазин ↗</a>
+        <a href="Metavista Store.dc.html#/login" style="min-height:48px;display:flex;align-items:center;justify-content:center;padding:0 18px;border-radius:14px;border:1.5px solid #E8E4DF;color:#4A4A4A;font-size:14px;font-weight:700">Выйти</a>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
 <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#141414;color:#fff;border-radius:999px;padding:12px 20px;font-size:13px;font-weight:700;z-index:80;box-shadow:0 12px 30px rgba(20,20,20,.3);animation:mv-in .2s ease">{{ toast }}</div>
+  <div class="adm-toast" role="status" aria-live="polite" style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#141414;color:#fff;border-radius:999px;padding:12px 20px;font-size:13px;font-weight:700;z-index:80;box-shadow:0 12px 30px rgba(20,20,20,.3);animation:mv-in .2s ease">{{ toast }}</div>
 </sc-if>
 </x-dc>
 <div class="mv-skel" aria-hidden="true"><img src="./assets/logo-mark-2x.png" alt=""></div>
@@ -505,14 +596,15 @@ class Component extends DCLogic {
   constructor(p) { super(p);
     this.state = { route:this.parseHash(), q:'', toast:'', statusFilter:'all', orders:ORDERS, queue:QUEUE, products:PRODUCTS, curProd:'classic', addons:[['Парящее 3D-крепление','10.00'],['Магнит Wall-Safe','20.00'],['Комплект магнитного крепления (отдельно)','19.99']].map(a => ({ t:a[0], price:a[1] })),
       wall:WALL, wallTab:'pending', reviews:REVIEWS, tiers:['10','25','35'], promoBarOn:true, codes:[{ code:'WELCOME15', pct:15, uses:412, source:'Попап подписки', active:true },{ code:'WALLFAME20', pct:20, uses:37, source:'Награда Wall of Fame', active:true },{ code:'STELLARIS10', pct:10, uses:128, source:'Партнёр', active:false }], newCode:'', newPct:'',
-      features: loadFeatures(), settings: (() => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } })(), shdDraft: null, contentTab:'faq', faqs:FAQS, faqOpen:-1, posts:POSTS, policyKey:'privacy', policies:POLICIES };
+      moreOpen:false, features: loadFeatures(), settings: (() => { try { return { shdEndpoint:'', ...JSON.parse(localStorage.getItem('mv_settings') || '{}') }; } catch (e) { return { shdEndpoint:'' }; } })(), shdDraft: null, contentTab:'faq', faqs:FAQS, faqOpen:-1, posts:POSTS, policyKey:'privacy', policies:POLICIES };
     const saved = loadSaved(); for (const k of SAVED_KEYS) if (saved[k] !== undefined) this.state[k] = saved[k];
     this._savedJson = JSON.stringify(this.pickSaved()); }
   pickSaved() { return Object.fromEntries(SAVED_KEYS.map(k => [k, this.state[k]])); }
   componentDidUpdate() { const j = JSON.stringify(this.pickSaved()); if (j !== this._savedJson) { this._savedJson = j; try { localStorage.setItem('mv_admin', j); } catch (e) {} } }
   parseHash() { const h = (location.hash || '#/').replace(/^#\/?/, ''); const [page, param] = h.split('/'); return { page: page || 'dash', param: param || '' }; }
-  componentDidMount() { this._onHash = () => { this.setState({ route:this.parseHash(), q:'' }); window.scrollTo(0, 0); }; window.addEventListener('hashchange', this._onHash); }
-  componentWillUnmount() { window.removeEventListener('hashchange', this._onHash); clearTimeout(this._t); }
+  componentDidMount() { this._onHash = () => { this.setState({ route:this.parseHash(), q:'', moreOpen:false }); window.scrollTo(0, 0); };
+    this._onKey = e => { if (e.key === 'Escape' && this.state.moreOpen) this.setState({ moreOpen:false }); }; window.addEventListener('keydown', this._onKey); window.addEventListener('hashchange', this._onHash); }
+  componentWillUnmount() { window.removeEventListener('keydown', this._onKey); window.removeEventListener('hashchange', this._onHash); clearTimeout(this._t); }
   setFeatures(features) { try { localStorage.setItem('mv_features', JSON.stringify(features)); } catch (e) {} this.setState({ features }); }
   toast(t) { this.setState({ toast:t }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast:'' }), 2200); }
   updOrder(id, patch) { this.setState(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, ...patch } : o) })); }
@@ -550,6 +642,15 @@ class Component extends DCLogic {
       saveShdEndpoint: () => { const v = String(S.shdDraft ?? S.settings.shdEndpoint).trim(); if (v && !/^https?:\/\//i.test(v)) { this.toast('Введите полный адрес, начиная с https://'); return; } const settings = { ...S.settings, shdEndpoint: v }; try { localStorage.setItem('mv_settings', JSON.stringify(settings)); } catch (e) {} this.setState({ settings, shdDraft:null }); this.toast(v ? 'Сервер S.HD сохранён' : 'Используется улучшение в браузере'); },
       shdModeLabel: S.settings.shdEndpoint ? 'сервер · ' + S.settings.shdEndpoint : 'улучшение в браузере',
       featuresReset: () => { this.setFeatures({ ...FEATURE_DEFAULTS }); this.toast('Настройки по умолчанию восстановлены'); }, featuresAllOn: () => { this.setFeatures(Object.fromEntries(FEATURES.map(f => [f.key, true]))); this.toast('Все разделы включены'); },
+      // mobile: bottom tabs for the daily pages, everything else under «Ещё»
+      ...(() => { const ICON = { dash:'M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10', orders:'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4', queue:'M12 3l2.2 5.3L20 10l-5.8 1.7L12 17l-2.2-5.3L4 10l5.8-1.7z', products:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', more:'M4 7h16M4 12h16M4 17h16' };
+        const tabKeys = ['dash','orders', ...(S.features.shd_enhance ? ['queue'] : []), 'products'], rest = pages.filter(p => !tabKeys.includes(p[0])), inMore = !tabKeys.includes(pageKey), moreBadge = rest.reduce((a, p) => a + (p[2] || 0), 0);
+        const col = on => on ? '#E8362D' : '#6B6B6B';
+        const tabs = tabKeys.map(k => { const pg = pages.find(p => p[0] === k); const label = { dash:'Сводка', orders:'Заказы', queue:'S.HD', products:'Товары' }[k]; return { href:'#/' + k, label, icon:ICON[k], badge: pg ? pg[2] || 0 : 0, color: col(pageKey === k), current: pageKey === k ? 'page' : undefined, click: () => this.setState({ moreOpen:false }) }; });
+        tabs.push({ href:'#' + location.hash.replace(/^#/, ''), label:'Ещё', icon:ICON.more, badge: moreBadge, color: col(inMore || S.moreOpen), current: inMore ? 'page' : undefined, click: e => { e.preventDefault(); this.setState({ moreOpen: !S.moreOpen }); } });
+        return { tabItems: tabs, tabbarStyle: { position:'fixed', left:0, right:0, bottom:0, zIndex:50, background:'rgba(255,255,255,.97)', backdropFilter:'blur(10px)', borderTop:'1px solid #E8E4DF', gridTemplateColumns:`repeat(${tabs.length},1fr)`, paddingBottom:'env(safe-area-inset-bottom)' },
+          moreOpen: S.moreOpen, closeMore: () => this.setState({ moreOpen:false }),
+          moreItems: rest.map(p => ({ href:'#/' + p[0], label:p[1], badge:p[2] || 0, bg: p[0] === pageKey ? '#FFF4EE' : '#FBFAF8', border: p[0] === pageKey ? '#E8362D' : '#EFEBE6' })) }; })(),
       navItems: pages.map(p => ({ label:p[1], href:'#/' + p[0], badge: p[2] || 0, color: p[0] === pageKey ? '#fff' : '#B9B4AE', bg: p[0] === pageKey ? 'rgba(255,255,255,.1)' : 'transparent' })),
       pageKicker: 'METAVISTA · АДМИНКА', pageTitle: route.page === 'order' ? 'Заказ ' + (orderFound ? order.id : route.param) : route.page === 'customer' ? cust.name : cur[1],
       q:S.q, setQ: e => this.setState({ q:e.target.value }), toast:S.toast,
@@ -568,6 +669,13 @@ class Component extends DCLogic {
         timeline: [['Заказ оформлен', fmtDate(order.daysAgo) + ' · ' + order.payment],['Фото получено', fmtDate(order.daysAgo)], ...(order.proof !== 'pending' ? [['Макет отправлен клиенту', fmtDate(order.daysAgo)]] : []), ...(order.proof === 'approved' ? [['Макет согласован', fmtDate(Math.max(0, order.daysAgo - 1))]] : []), ...(order.tracking ? [['Отправлен · ' + order.tracking, fmtDate(Math.max(0, order.daysAgo - 2))]] : [])].map(t => ({ t:t[0], d:t[1] })),
         address: CUSTOMERS[order.custId].name + '\n' + 'ул. Примерная, 12\n' + CUSTOMERS[order.custId].country },
       statusList: Object.keys(STATUS).map(k => ({ key:k, label:STATUS[k][0] })),
+      nextStep: route.page === 'order' && orderFound ? (() => { const go = (k, msg) => () => { this.updOrder(order.id, { statusKey:k }); this.toast(msg); };
+        switch (order.statusKey) {
+          case 'pending': case 'review': return order.proof === 'approved' ? { label:'→ В производство', run: go('production', 'Заказ передан в производство') } : order.proof === 'sent' ? { label:'✓ Макет согласован', run: () => { this.updOrder(order.id, { proof:'approved', statusKey:'production' }); this.toast('Макет согласован · заказ передан в производство'); } } : { label:'Отправить макет клиенту', run: () => { this.updOrder(order.id, { proof:'sent' }); this.toast('Макет отправлен на ' + order.email); } };
+          case 'production': return { label:'→ Отправлен', run: () => { if (!order.tracking) { this.toast('Сначала добавьте трек-номер'); const el = document.querySelector('input[placeholder^="напр."]'); if (el) { el.scrollIntoView({ behavior:'smooth', block:'center' }); el.focus({ preventScroll:true }); } return; } go('shipped', 'Статус: отправлен · клиент уведомлён')(); } };
+          case 'shipped': return { label:'→ Доставлен', run: go('delivered', 'Статус: доставлен') };
+          default: return null; } })() : null,
+      rootClass: route.page === 'order' && orderFound && ['pending','review','production','shipped'].includes(order.statusKey) ? 'adm-has-next' : '',
       setOrderStatus: e => { this.updOrder(order.id, { statusKey:e.target.value }); this.toast('Статус обновлён · клиент уведомлён'); },
       setTracking: e => this.updOrder(order.id, { tracking:e.target.value }), saveTracking: () => this.toast('Трек-номер сохранён · письмо об отправке ушло'), setAdminNote: e => this.updOrder(order.id, { adminNote:e.target.value }),
       sendProof: () => { this.updOrder(order.id, { proof:'sent' }); this.toast('Макет отправлен на ' + order.email); }, approveProof: () => { this.updOrder(order.id, { proof:'approved', statusKey: order.statusKey === 'pending' || order.statusKey === 'review' ? 'production' : order.statusKey }); this.toast('Макет согласован · заказ передан в производство'); },
