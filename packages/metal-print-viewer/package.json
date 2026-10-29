@@ -1,0 +1,11 @@
+{
+  "name": "metal-print-viewer",
+  "version": "1.0.0",
+  "description": "Standalone browser 3D preview of a thin metal photo print and its mounting hardware",
+  "private": true,
+  "type": "module",
+  "exports": "./viewer.js",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1"
+  }
+}

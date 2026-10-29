@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>3D-просмотр печати на металле</title>
+  <link rel="stylesheet" href="./demo.css">
+</head>
+<body>
+  <main class="demo">
+    <header class="intro">
+      <p class="eyebrow">Отдельный модуль · без сборки</p>
+      <h1>Ваша фотография — в 3D</h1>
+      <p>Покрутите панель мышью или пальцем. Посмотрите блики, толщину металла и крепление с обратной стороны.</p>
+    </header>
+
+    <div class="workspace">
+      <section class="preview" aria-label="Предпросмотр панели">
+        <div id="viewer" class="viewer"></div>
+        <p class="gesture">Перетаскивайте для поворота · колесо или щипок для масштаба</p>
+        <p id="viewer-status" class="viewer-status" role="status" aria-live="polite">Загружаем просмотр…</p>
+      </section>
+
+      <form id="controls" class="controls" aria-label="Настройки просмотра">
+        <div class="control-heading">
+          <h2>Настройки</h2>
+          <button type="button" id="reset" class="text-button">Сбросить</button>
+        </div>
+
+        <label class="upload" for="photo">
+          <span class="upload-title">Выбрать своё фото</span>
+          <span id="photo-name" class="hint">Останется в вашем браузере</span>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp,image/avif">
+        </label>
+        <p class="hint upload-note">Изображение заполнит панель по центру. Здесь нет редактора кадрирования.</p>
+
+        <div class="field-row">
+          <label>Размер
+            <select id="size" name="size">
+              <option value="M">M · 30 × 40 см</option>
+              <option value="L">L · 45 × 60 см</option>
+              <option value="XL">XL · 60 × 80 см</option>
+            </select>
+          </label>
+          <label>Ориентация
+            <select id="orientation" name="orientation">
+              <option value="portrait">Вертикально</option>
+              <option value="landscape">Горизонтально</option>
+            </select>
+          </label>
+        </div>
+
+        <label>Крепление
+          <select id="mount" name="mount">
+            <option value="float">Обычное</option>
+            <option value="magnet">Магнитное</option>
+            <option value="standard">Настольная подставка</option>
+          </select>
+        </label>
+        <p id="mount-note" class="hint">У XL — два крепления.</p>
+
+        <div class="field-row">
+          <label>Поверхность
+            <select id="finish" name="finish">
+              <option value="gloss">Глянец</option>
+              <option value="brushed">Шлифованный металл</option>
+            </select>
+          </label>
+          <label>Показать
+            <select id="mode" name="mode">
+              <option value="front">Лицевую сторону</option>
+              <option value="back">Обратную сторону</option>
+            </select>
+          </label>
+        </div>
+
+        <fieldset>
+          <legend>Надпись на обороте</legend>
+          <label class="check"><input id="back-enabled" name="backEnabled" type="checkbox"> Добавить надпись</label>
+          <div id="back-fields" class="back-fields" hidden>
+            <label>Текст
+              <textarea id="back-text" name="backText" rows="2" maxlength="120">Сохрани этот момент</textarea>
+            </label>
+            <div class="field-row">
+              <label>Положение
+                <select id="back-position" name="backPosition">
+                  <option value="bottom-center">Снизу по центру</option>
+                  <option value="top-center">Сверху по центру</option>
+                  <option value="bottom-left">Снизу слева</option>
+                  <option value="bottom-right">Снизу справа</option>
+                </select>
+              </label>
+              <label>Высота букв
+                <select id="back-font" name="backFont">
+                  <option value="10">1 см</option>
+                  <option value="30">3 см</option>
+                  <option value="50">5 см</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <p id="control-error" class="error" role="alert" hidden></p>
+        <p class="privacy">Фото никуда не отправляется. Демо работает без аккаунта, аналитики и запросов к магазину.</p>
+      </form>
+    </div>
+
+    <footer><a href="./README.md">Как перенести модуль</a><span aria-hidden="true">·</span><a href="./INTEGRATE.md">Инструкция для разработчика</a></footer>
+  </main>
+  <script type="module" src="./demo.js"></script>
+</body>
+</html>
